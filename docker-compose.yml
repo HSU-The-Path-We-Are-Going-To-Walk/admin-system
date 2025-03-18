@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./app.db
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    # 볼륨 마운트 활성화 - 개발 편의성 향상
+    volumes:
+      - ./frontend/src:/app/src:cached
+      - ./frontend/public:/app/public:cached
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - GENERATE_SOURCEMAP=false
+      - CHOKIDAR_USEPOLLING=true
+      - WDS_SOCKET_PORT=0
+      - FAST_REFRESH=false
+      - WATCHPACK_POLLING=true
+      - NODE_ENV=development
+    depends_on:
+      - backend

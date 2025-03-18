@@ -1,41 +1,279 @@
-.dashboard {
-    padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', 'Noto Sans KR', sans-serif;
 }
 
-.status-bar {
-    background-color: #f5f5f5;
-    padding: 10px;
-    margin-bottom: 20px;
-    border-radius: 4px;
-    text-align: center;
+.app {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
 }
 
-.emergency-item {
-    background-color: #fff;
-    border-radius: 4px;
-    padding: 15px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    animation: slideIn 0.3s ease-out;
+.map-container {
+  width: 100%;
+  height: 100vh;
+  width: 100% !important;
+  height: 100vh !important;
+  position: relative !important;
+  overflow: hidden !important;
+  z-index: 1;
 }
 
-.emergency-item.pending {
-    border-left: 4px solid #ff4444;
+/* 햄버거 버튼 */
+.hamburger-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 900;
+  background-color: white;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  padding: 8px 12px;
+  font-size: 18px;
+  cursor: pointer;
 }
 
-.emergency-item.handled {
-    border-left: 4px solid #00C851;
+.hamburger-btn:hover {
+  background-color: #f0f0f0;
+}
+
+/* 사이드바 */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 250px;
+  height: 100%;
+  background-color: #fff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  position: relative;
+}
+
+.sidebar-header button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.sidebar-content {
+  padding: 20px;
+}
+
+.menu-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background-color: #f5f5f5;
+}
+
+/* 지도 플레이스홀더 */
+.map-placeholder {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #f8f9fa;
+}
+
+/* 알림 스택 스타일 통합 및 수정 */
+.notification-stack, .notification-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 300px;
+  max-height: 70vh;
+  overflow-y: auto;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none; /* 아래 요소 클릭 가능하게 */
+}
+
+.notification-item {
+  background-color: #f8f9fa;
+  border-left: 4px solid #dc3545;
+  padding: 12px;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  pointer-events: auto; /* 알림 자체는 클릭 가능하게 */
+  animation: slideIn 0.3s ease-out;
+}
+
+/* 알림 스택 스타일 개선 */
+.notification-stack {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 300px;
+  max-height: 70vh;
+  overflow-y: auto;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.notification-item {
+  background-color: #f8f9fa;
+  border-left: 4px solid #dc3545;
+  padding: 12px;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+  animation: slideIn 0.3s ease-out;
+  opacity: 1;
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+  position: relative; /* 닫기 버튼 위치 지정을 위해 추가 */
+}
+
+.notification-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #6c757d;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  text-align: center;
+  border-radius: 50%;
+}
+
+.notification-close:hover {
+  background-color: rgba(0,0,0,0.1);
+  color: #dc3545;
+}
+
+.notification-item:hover {
+  transform: translateX(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes slideIn {
-    from {
-        transform: translateY(-20px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 알림 퇴장 애니메이션 */
+.notification-item.fadeOut {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+/* 카카오 맵 마커 팝업 스타일 */
+.bus-stop-popup {
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  min-width: 150px;
+  position: relative;
+}
+
+.popup-header {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  position: relative;
+}
+
+.popup-header h3 {
+  margin: 0;
+  padding-right: 20px;
+}
+
+.close-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.popup-content {
+  padding: 10px 0;
+}
+
+.emergency-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.emergency-btn:hover {
+  background-color: #c82333;
+}
+
+/* Sidebar 스타일 */
+.sidebar-container {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 250px;
+  height: 100%;
+  background-color: #fff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar-container.open {
+  transform: translateX(0);
+}
+
+/* 지도 에러 메시지 */
+.map-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  text-align: center;
+  max-width: 80%;
+}
+
+.map-error h3 {
+  color: #dc3545;
+  margin-top: 0;
 }
