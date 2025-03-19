@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const BusStopMap = ({ busStops }) => {
+const BusStopMap = ({ busStops, searchedStop }) => {
     const mapRef = useRef(null);
     const mapInstance = useRef(null);
-    const markers = useRef([]);
+    const markers = useRef({}); // 객체 형태로 변경하여 ID로 빠르게 접근
     const overlays = useRef([]);
     const [mapError, setMapError] = useState(null);
 
@@ -13,6 +13,8 @@ const BusStopMap = ({ busStops }) => {
     // 마커 클릭 이벤트 처리
     const handleMarkerClick = (marker, stop) => {
         try {
+            console.log(`마커 클릭: ${stop.name}`);
+
             // 이전 오버레이 모두 닫기
             overlays.current.forEach(overlay => overlay.setMap(null));
             overlays.current = [];
@@ -59,18 +61,11 @@ const BusStopMap = ({ busStops }) => {
                 .then(response => response.json())
                 .then(data => {
                     console.log('API 응답:', data);
-
-                    // 전역 함수를 통해 알림 추가
-                    if (window.simulateEmergency) {
-                        window.simulateEmergency(busStopId);
-                        console.log('알림이 생성되었습니다.');
-                    } else {
-                        console.error('simulateEmergency 함수가 정의되지 않았습니다.');
-                    }
+                    // WebSocket을 통해 알림이 이미 전송되므로 여기서는 추가 알림을 생성하지 않음
                 })
                 .catch(err => {
                     console.error('긴급 버튼 API 호출 실패:', err);
-                    // API 호출 실패해도 알림 생성
+                    // API 호출 실패 시에만 클라이언트 쪽에서 알림 생성 (백업 메커니즘)
                     if (window.simulateEmergency) {
                         window.simulateEmergency(busStopId);
                     }
@@ -137,7 +132,7 @@ const BusStopMap = ({ busStops }) => {
                 mapInstance.current = map;
                 console.log("지도 생성 완료");
 
-                // 마커 생성
+                // 마커 생성 - 객체 형태로 저장
                 busStops.forEach(stop => {
                     const position = new window.kakao.maps.LatLng(stop.lat, stop.lng);
                     const marker = new window.kakao.maps.Marker({
@@ -145,7 +140,12 @@ const BusStopMap = ({ busStops }) => {
                         title: stop.name
                     });
                     marker.setMap(map);
-                    markers.current.push(marker);
+
+                    // ID를 키로 하여 마커 저장
+                    markers.current[stop.id] = {
+                        marker: marker,
+                        stop: stop
+                    };
 
                     // 마커 클릭 이벤트
                     window.kakao.maps.event.addListener(marker, 'click', () => handleMarkerClick(marker, stop));
@@ -170,14 +170,80 @@ const BusStopMap = ({ busStops }) => {
 
         // 컴포넌트 언마운트 시 마커 제거
         return () => {
-            if (markers.current.length > 0) {
-                markers.current.forEach(marker => marker.setMap(null));
-            }
-            if (overlays.current.length > 0) {
-                overlays.current.forEach(overlay => overlay.setMap(null));
-            }
+            Object.values(markers.current).forEach(({ marker }) => marker.setMap(null));
+            overlays.current.forEach(overlay => overlay.setMap(null));
         };
     }, [busStops]);
+
+    // 검색된 정류소 변경 시 지도 이동 및 마커 클릭
+    useEffect(() => {
+        if (searchedStop && mapInstance.current && markers.current) {
+            console.log("검색된 정류소로 이동:", searchedStop.name, "타임스탬프:", searchedStop.timestamp);
+
+            // 해당 정류소로 지도 중심 이동
+            const position = new window.kakao.maps.LatLng(searchedStop.lat, searchedStop.lng);
+
+            // 강제로 setCenter 먼저 적용 후 부드러운 이동을 위해 약간 지연 후 panTo 실행
+            mapInstance.current.setCenter(position);
+
+            // 적절한 줌 레벨로 설정
+            if (mapInstance.current.getLevel() > 3) {
+                mapInstance.current.setLevel(3, { animate: true });
+            }
+
+            // ID로 마커 찾기 
+            const markerInfo = markers.current[searchedStop.id];
+
+            // 마커가 있으면 클릭 이벤트 트리거
+            if (markerInfo) {
+                // 이전 오버레이 모두 닫기
+                overlays.current.forEach(overlay => overlay.setMap(null));
+                overlays.current = [];
+
+                // 약간 지연시켜 지도 이동 후 오버레이가 표시되도록 함
+                setTimeout(() => {
+                    // 지도 이동을 보장하기 위해 panTo 한번 더 호출
+                    mapInstance.current.panTo(position);
+
+                    // 마커 클릭 효과 - 핸들러 직접 호출
+                    handleMarkerClick(markerInfo.marker, searchedStop);
+
+                    // 마커 시각적 강조
+                    try {
+                        // Animation 객체 안전하게 확인
+                        if (window.kakao && window.kakao.maps && window.kakao.maps.Animation &&
+                            typeof window.kakao.maps.Animation.BOUNCE !== 'undefined') {
+                            // BOUNCE 애니메이션 사용
+                            markerInfo.marker.setAnimation(window.kakao.maps.Animation.BOUNCE);
+                            setTimeout(() => {
+                                markerInfo.marker.setAnimation(null);
+                            }, 2000); // 2초 후 애니메이션 중지
+                        } else {
+                            console.log("카카오맵 애니메이션 기능을 사용할 수 없습니다. 대체 강조 효과를 적용합니다.");
+                            // 애니메이션 대신 마커를 깜빡이는 효과로 대체
+                            const blinkMarker = () => {
+                                let isVisible = false;
+                                let count = 0;
+                                const interval = setInterval(() => {
+                                    if (count >= 5) { // 5회 깜빡임
+                                        clearInterval(interval);
+                                        markerInfo.marker.setVisible(true);
+                                        return;
+                                    }
+                                    isVisible = !isVisible;
+                                    markerInfo.marker.setVisible(isVisible);
+                                    count++;
+                                }, 200); // 200ms 간격
+                            };
+                            blinkMarker();
+                        }
+                    } catch (error) {
+                        console.error("마커 강조 표시 중 오류 발생:", error);
+                    }
+                }, 100); // 지연시간 단축 (300ms → 100ms)
+            }
+        }
+    }, [searchedStop]);
 
     return (
         <>

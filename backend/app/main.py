@@ -2,6 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict
 import json
+from app.data.bus_stops import get_all_bus_stops, get_bus_stop_by_id
 
 app = FastAPI(title="고흥시 버스정류장 관리 시스템 API")
 
@@ -13,15 +14,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# 버스정류장 더미 데이터
-bus_stops = [
-    {"id": 1, "name": "고흥버스터미널", "lat": 34.61121, "lng": 127.28501},
-    {"id": 2, "name": "고흥군청", "lat": 34.61056, "lng": 127.28456},
-    {"id": 3, "name": "녹동항", "lat": 34.45004, "lng": 127.11628},
-    {"id": 4, "name": "풍양초등학교", "lat": 34.58345, "lng": 127.33671},
-    {"id": 5, "name": "고흥종합병원", "lat": 34.60894, "lng": 127.28561},
-]
 
 
 # WebSocket 연결을 관리하기 위한 클래스
@@ -51,7 +43,7 @@ async def root():
 
 @app.get("/api/bus-stops")
 async def get_bus_stops():
-    return bus_stops
+    return get_all_bus_stops()
 
 
 @app.websocket("/ws/emergency")
@@ -69,8 +61,19 @@ async def emergency_notification(websocket: WebSocket):
 # 긴급 버튼 신호 시뮬레이션용 API
 @app.post("/api/simulate-emergency/{bus_stop_id}")
 async def simulate_emergency(bus_stop_id: int):
-    bus_stop = next((stop for stop in bus_stops if stop["id"] == bus_stop_id), None)
+    bus_stop = get_bus_stop_by_id(bus_stop_id)
     if bus_stop:
-        # 실제 WebSocket을 통해 클라이언트에 알림을 보내는 코드 필요
+        # WebSocket을 통해 클라이언트에 알림
+        await manager.broadcast(
+            json.dumps(
+                {
+                    "busStopId": bus_stop["id"],
+                    "busStopName": bus_stop["name"],
+                    "lat": bus_stop["lat"],
+                    "lng": bus_stop["lng"],
+                    "timestamp": None,  # 클라이언트에서 시간 생성
+                }
+            )
+        )
         return {"message": f"Emergency signal sent for bus stop: {bus_stop['name']}"}
     return {"error": "Bus stop not found"}

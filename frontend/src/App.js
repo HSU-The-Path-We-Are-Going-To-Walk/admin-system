@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import BusStopMap from './components/BusStopMap';
 import Sidebar from './components/Sidebar';
 import NotificationStack from './components/NotificationStack';
+import SearchBar from './components/SearchBar';
 import axios from 'axios';
 import './App.css';
 
@@ -13,6 +14,8 @@ function App() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState(null);
+    // 검색된 정류소 상태 추가
+    const [searchedStop, setSearchedStop] = useState(null);
 
     // 버스 정류장 데이터 로드
     useEffect(() => {
@@ -149,6 +152,15 @@ function App() {
         setNotifications(prev => [debugNotification, ...prev]);
     };
 
+    // 검색 핸들러 함수
+    const handleSearch = (stop) => {
+        // 타임스탬프를 추가하여 매번 다른 객체로 인식되도록 함
+        setSearchedStop({
+            ...stop,
+            timestamp: Date.now() // 타임스탬프 추가
+        });
+    };
+
     return (
         <div className="app">
             <button className="hamburger-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
@@ -156,6 +168,11 @@ function App() {
             </button>
 
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+            {/* 검색창 추가 */}
+            <div className="search-bar-wrapper">
+                <SearchBar busStops={busStops} onSearch={handleSearch} />
+            </div>
 
             {isLoading ? (
                 <div className="map-placeholder">
@@ -168,7 +185,7 @@ function App() {
                     <p>{loadError}</p>
                 </div>
             ) : (
-                <BusStopMap busStops={busStops} />
+                <BusStopMap busStops={busStops} searchedStop={searchedStop} />
             )}
 
             <NotificationStack
