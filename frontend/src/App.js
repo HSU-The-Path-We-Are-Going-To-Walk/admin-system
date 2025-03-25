@@ -3,19 +3,38 @@ import BusStopMap from './components/BusStopMap';
 import Sidebar from './components/Sidebar';
 import NotificationStack from './components/NotificationStack';
 import SearchBar from './components/SearchBar';
+import emergencySound from './components/EmergencySound';
 import axios from 'axios';
 import './App.css';
 
 function App() {
     // 상태 관리
     const [busStops, setBusStops] = useState([]);
-    // 초기 알림 없이 빈 배열로 시작
     const [notifications, setNotifications] = useState([]);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState(null);
-    // 검색된 정류소 상태 추가
     const [searchedStop, setSearchedStop] = useState(null);
+    // 액티브 메뉴 상태 추가
+    const [activeMenu, setActiveMenu] = useState(null);
+    // 알림 내역 저장
+    const [emergencyHistory, setEmergencyHistory] = useState([]);
+    // 게시판 업데이트 상태 추가
+    const [bulletinUpdateStatus, setBulletinUpdateStatus] = useState(null); // 'loading', 'success', 'error' 중 하나
+    const [bulletinUpdateMessage, setBulletinUpdateMessage] = useState('');
+    // 긴급 알림 활성화 상태 추가
+    const [emergencyActive, setEmergencyActive] = useState(false);
+
+    // 알림음 시스템 초기화
+    useEffect(() => {
+        emergencySound.init().then(success => {
+            if (success) {
+                console.log('알림음 시스템 준비 완료');
+            } else {
+                console.warn('알림음 시스템 초기화 실패');
+            }
+        });
+    }, []);
 
     // 버스 정류장 데이터 로드
     useEffect(() => {
@@ -64,10 +83,18 @@ function App() {
                             busStopId: data.busStopId,
                             busStopName: data.busStopName,
                             message: `${data.busStopName}에서 긴급 버튼이 눌렸습니다!`,
-                            timestamp: new Date().toLocaleTimeString()
+                            timestamp: new Date().toLocaleTimeString(),
+                            lat: data.lat,
+                            lng: data.lng
                         };
 
+                        // 알림 내역에 추가
+                        setEmergencyHistory(prev => [newNotification, ...prev]);
+
                         setNotifications(prev => [newNotification, ...prev].slice(0, 10));
+
+                        // 긴급 알림 활성화 (화면 깜빡임 효과 시작)
+                        activateEmergencyEffect();
                     } catch (error) {
                         console.error('웹소켓 메시지 처리 오류:', error);
                     }
@@ -103,6 +130,19 @@ function App() {
         };
     }, []);
 
+    // 화면 깜빡임 효과 활성화 함수
+    const activateEmergencyEffect = () => {
+        setEmergencyActive(true);
+
+        // 직접 만든 알림음 재생
+        emergencySound.play();
+
+        // 5초 후 깜빡임 효과 종료
+        setTimeout(() => {
+            setEmergencyActive(false);
+        }, 2000);
+    };
+
     // 시뮬레이션 긴급 알림 함수 추가
     const simulateEmergency = (busStopId) => {
         console.log(`simulateEmergency 함수 호출됨: 정류장 ID ${busStopId}`);
@@ -113,15 +153,24 @@ function App() {
                 busStopId: busStop.id,
                 busStopName: busStop.name,
                 message: `${busStop.name}에서 긴급 버튼이 눌렸습니다!`,
-                timestamp: new Date().toLocaleTimeString()
+                timestamp: new Date().toLocaleTimeString(),
+                lat: busStop.lat,
+                lng: busStop.lng
             };
             console.log("새 알림 생성:", newNotification);
+
+            // 알림 내역에 추가
+            setEmergencyHistory(prev => [newNotification, ...prev]);
+
             setNotifications(prev => {
                 console.log("이전 알림:", prev);
                 const newNotifications = [newNotification, ...prev];
                 console.log("업데이트된 알림:", newNotifications);
                 return newNotifications;
             });
+
+            // 긴급 알림 활성화 (화면 깜빡임 효과 시작)
+            activateEmergencyEffect();
         } else {
             console.error(`ID가 ${busStopId}인 버스 정류장을 찾을 수 없습니다.`);
         }
@@ -147,13 +196,25 @@ function App() {
             busStopId: 999,
             busStopName: 'DEBUG',
             message: '디버그 알림 - F2키로 추가된 알림',
-            timestamp: new Date().toLocaleTimeString()
+            timestamp: new Date().toLocaleTimeString(),
+            lat: busStops[0]?.lat,
+            lng: busStops[0]?.lng
         };
         setNotifications(prev => [debugNotification, ...prev]);
+        // 알림 내역에도 추가
+        setEmergencyHistory(prev => [debugNotification, ...prev]);
+
+        // 디버그 알림도 긴급 알림 효과 적용
+        activateEmergencyEffect();
     };
 
     // 검색 핸들러 함수
     const handleSearch = (stop) => {
+        // 사이드바 메뉴가 열려있으면 닫기
+        if (activeMenu) {
+            setActiveMenu(null);
+        }
+
         // 타임스탬프를 추가하여 매번 다른 객체로 인식되도록 함
         setSearchedStop({
             ...stop,
@@ -161,13 +222,291 @@ function App() {
         });
     };
 
+    // 게시판 업데이트 함수
+    const handleBulletinUpdate = async () => {
+        setBulletinUpdateStatus('loading');
+        setBulletinUpdateMessage('게시판 업데이트 중...');
+
+        try {
+            // 서버 API 엔드포인트 설정 (나중에 실제 주소로 변경)
+            const apiUrl = 'http://localhost:8000/update-notices';
+
+            // API 호출
+            const response = await axios.post(apiUrl, {
+                requestTime: new Date().toISOString()
+            });
+
+            console.log('게시판 업데이트 응답:', response.data);
+
+            // 업데이트 성공
+            setBulletinUpdateStatus('success');
+            setBulletinUpdateMessage('게시판 데이터가 성공적으로 업데이트되었습니다.');
+
+            // 5초 후 상태 초기화
+            setTimeout(() => {
+                if (bulletinUpdateStatus === 'success') {
+                    setBulletinUpdateStatus(null);
+                }
+            }, 5000);
+
+        } catch (error) {
+            console.error('게시판 업데이트 실패:', error);
+            setBulletinUpdateStatus('error');
+            setBulletinUpdateMessage(`게시판 업데이트에 실패했습니다: ${error.message || '연결 오류'}`);
+        }
+    };
+
+    // 메뉴 선택 핸들러
+    const handleMenuSelect = (menuOption) => {
+        console.log(`선택된 메뉴: ${menuOption}`);
+
+        // 게시판 업데이트 메뉴를 클릭한 경우, 즉시 업데이트 실행
+        if (menuOption === 'bulletin-board') {
+            handleBulletinUpdate();
+        }
+
+        setActiveMenu(menuOption);
+    };
+
+    // 선택된 메뉴에 따라 표시할 컴포넌트 결정
+    const renderActiveMenuComponent = () => {
+        switch (activeMenu) {
+            case 'bus-stops':
+                return (
+                    <div className="menu-component bus-stops-list">
+                        <h2>정류장 목록</h2>
+                        <div className="bus-stops-container">
+                            {busStops.map(stop => (
+                                <div
+                                    key={stop.id}
+                                    className="bus-stop-item"
+                                    onClick={() => handleSearch(stop)}
+                                >
+                                    <div className="bus-stop-name">{stop.name}</div>
+                                    <div className="bus-stop-loc">위치: {stop.lat.toFixed(5)}, {stop.lng.toFixed(5)}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+
+            case 'emergency-history':
+                return (
+                    <div className="menu-component emergency-history">
+                        <h2>긴급 알림 내역</h2>
+                        <div className="emergency-history-container">
+                            {emergencyHistory.length > 0 ? (
+                                emergencyHistory.map(notification => (
+                                    <div key={notification.id} className="emergency-history-item">
+                                        <div className="emergency-time">{notification.timestamp}</div>
+                                        <div className="emergency-location">{notification.busStopName}</div>
+                                        <div className="emergency-message">{notification.message}</div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="empty-history-message">긴급 알림 내역이 없습니다.</div>
+                            )}
+                        </div>
+                    </div>
+                );
+
+            case 'bulletin-board':
+                return (
+                    <div className="menu-component bulletin-board">
+                        <h2>게시판 업데이트</h2>
+                        <div className={`bulletin-status ${bulletinUpdateStatus || ''}`}>
+                            {bulletinUpdateStatus === 'loading' && (
+                                <div className="bulletin-loading">
+                                    <div className="bulletin-spinner"></div>
+                                    <p>{bulletinUpdateMessage}</p>
+                                </div>
+                            )}
+
+                            {bulletinUpdateStatus === 'success' && (
+                                <div className="bulletin-success">
+                                    <div className="success-icon">✓</div>
+                                    <p>{bulletinUpdateMessage}</p>
+                                </div>
+                            )}
+
+                            {bulletinUpdateStatus === 'error' && (
+                                <div className="bulletin-error">
+                                    <div className="error-icon">✗</div>
+                                    <p>{bulletinUpdateMessage}</p>
+                                    <button
+                                        className="retry-button"
+                                        onClick={handleBulletinUpdate}
+                                    >
+                                        다시 시도
+                                    </button>
+                                </div>
+                            )}
+
+                            {!bulletinUpdateStatus && (
+                                <div className="bulletin-idle">
+                                    <p>게시판 데이터를 업데이트하려면 아래 버튼을 클릭하세요.</p>
+                                    <button
+                                        className="update-button"
+                                        onClick={handleBulletinUpdate}
+                                    >
+                                        게시판 업데이트
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+
+            case 'settings':
+                return (
+                    <div className="menu-component settings">
+                        <h2>설정</h2>
+                        <div className="settings-container">
+                            <div className="setting-group">
+                                <h3>지도 설정</h3>
+                                <div className="setting-item">
+                                    <label>
+                                        <input type="checkbox" defaultChecked />
+                                        정류장 이름 표시
+                                    </label>
+                                </div>
+                                <div className="setting-item">
+                                    <label>
+                                        <input type="checkbox" defaultChecked />
+                                        실시간 갱신
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="setting-group">
+                                <h3>알림 설정</h3>
+                                <div className="setting-item">
+                                    <label>
+                                        <input type="checkbox" defaultChecked />
+                                        소리 알림
+                                    </label>
+                                </div>
+                                <div className="setting-item">
+                                    <label>알림 유지시간:
+                                        <select defaultValue="60">
+                                            <option value="30">30초</option>
+                                            <option value="60">1분</option>
+                                            <option value="300">5분</option>
+                                            <option value="0">계속 유지</option>
+                                        </select>
+                                    </label>
+                                </div>
+                            </div>
+                            <button className="settings-save-btn">설정 저장</button>
+                        </div>
+                    </div>
+                );
+
+            case 'admin-info':
+                return (
+                    <div className="menu-component admin-info">
+                        <h2>관리자 정보</h2>
+                        <div className="admin-info-container">
+                            <div className="admin-info-item">
+                                <strong>시스템명:</strong> 고흥시 버스정류장 관리 시스템
+                            </div>
+                            <div className="admin-info-item">
+                                <strong>버전:</strong> 1.0.0
+                            </div>
+                            <div className="admin-info-item">
+                                <strong>담당부서:</strong> 고흥시 교통과
+                            </div>
+                            <div className="admin-info-item">
+                                <strong>연락처:</strong> 061-XXX-XXXX
+                            </div>
+                            <div className="admin-info-item">
+                                <strong>이메일:</strong> transport@goheung.go.kr
+                            </div>
+                            <div className="admin-info-item">
+                                <strong>개발:</strong> HSU-The-Path-We-Are-Going-To-Walk
+                            </div>
+                        </div>
+                    </div>
+                );
+
+            case 'help':
+                return (
+                    <div className="menu-component help">
+                        <h2>도움말</h2>
+                        <div className="help-container">
+                            <div className="help-section">
+                                <h3>시스템 사용법</h3>
+                                <ul className="help-list">
+                                    <li>
+                                        <strong>지도 사용:</strong> 지도를 드래그하여 이동하고, 휠 또는 +/- 버튼으로 확대/축소할 수 있습니다.
+                                    </li>
+                                    <li>
+                                        <strong>정류장 검색:</strong> 상단 검색창에 정류장 이름을 입력하여 특정 정류장을 찾을 수 있습니다.
+                                    </li>
+                                    <li>
+                                        <strong>정류장 정보:</strong> 지도의 정류장 마커를 클릭하면 해당 정류장의 상세 정보를 확인할 수 있습니다.
+                                    </li>
+                                    <li>
+                                        <strong>알림 관리:</strong> 우측 하단에 표시되는 긴급 알림은 X 버튼을 클릭하여 닫을 수 있습니다.
+                                    </li>
+                                    <li>
+                                        <strong>게시판 업데이트:</strong> 메뉴에서 게시판 업데이트 버튼을 클릭하여 최신 공지사항을 업데이트할 수 있습니다.
+                                    </li>
+                                </ul>
+                            </div>
+                            <div className="help-section">
+                                <h3>긴급 알림 시스템</h3>
+                                <p>
+                                    본 시스템은 각 정류장에 설치된 긴급 버튼으로부터 신호를 받아 실시간으로 관리자에게 알림을 전달합니다.
+                                    긴급 상황 발생 시 즉시 해당 위치로 이동하여 조치를 취할 수 있도록 지원합니다.
+                                </p>
+                            </div>
+                            <div className="help-section">
+                                <h3>문제 해결</h3>
+                                <p>
+                                    시스템 사용 중 문제가 발생하면 관리자 정보의 연락처로 문의해 주세요.
+                                    기술적인 문제는 개발팀에서 지원합니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                );
+
+            default:
+                return null;
+        }
+    };
+
     return (
-        <div className="app">
+        <div className={`app ${activeMenu ? 'menu-active' : ''} ${emergencyActive ? 'emergency-active' : ''}`}>
             <button className="hamburger-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
                 ☰
             </button>
 
-            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            <Sidebar
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
+                onMenuSelect={handleMenuSelect}
+            />
+
+            {/* 활성화된 메뉴 컴포넌트 */}
+            {activeMenu && (
+                <div className="active-menu-overlay">
+                    <div className="active-menu-container">
+                        <button
+                            className="close-menu-btn"
+                            onClick={() => setActiveMenu(null)}
+                        >
+                            ×
+                        </button>
+                        {renderActiveMenuComponent()}
+                    </div>
+                </div>
+            )}
+
+            {/* 긴급 알림 오버레이 */}
+            {emergencyActive && (
+                <div className="emergency-overlay"></div>
+            )}
 
             {/* 검색창 추가 */}
             <div className="search-bar-wrapper">
@@ -185,7 +524,7 @@ function App() {
                     <p>{loadError}</p>
                 </div>
             ) : (
-                <BusStopMap busStops={busStops} searchedStop={searchedStop} />
+                <BusStopMap busStops={busStops} searchedStop={searchedStop} activeEmergencies={notifications} />
             )}
 
             <NotificationStack

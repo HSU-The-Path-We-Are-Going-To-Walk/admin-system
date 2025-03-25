@@ -4,12 +4,26 @@ services:
   backend:
     build: ./backend
     volumes:
-      - ./backend:/app
+      - ./backend:/app:cached
+      # Python 캐시 디렉토리 제외
+      - /app/__pycache__
+      - /app/app/__pycache__
+      - /app/app/data/__pycache__
     ports:
       - "8000:8000"
     environment:
       - DATABASE_URL=sqlite:///./app.db
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    # 잘못된 옵션 제거하고 올바른 uvicorn 옵션만 사용
+    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --log-level warning
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   frontend:
     build: 

@@ -1,7 +1,11 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List, Dict
+import random
+import asyncio
 import json
+from typing import List, Dict, Any
+import traceback
+from datetime import datetime
 from app.data.bus_stops import get_all_bus_stops, get_bus_stop_by_id
 
 app = FastAPI(title="고흥시 버스정류장 관리 시스템 API")
@@ -77,3 +81,45 @@ async def simulate_emergency(bus_stop_id: int):
         )
         return {"message": f"Emergency signal sent for bus stop: {bus_stop['name']}"}
     return {"error": "Bus stop not found"}
+
+
+@app.post("/update-notices")
+async def update_notices(request_data: Dict[str, Any]):
+    """
+    게시판 데이터를 업데이트하는 API 엔드포인트
+
+    이 엔드포인트는 실제 구현이 완료되면 외부 시스템에서 공지사항을 가져와 업데이트합니다.
+    현재는 임시로 50% 확률로 성공 또는 실패를 반환합니다.
+    """
+    try:
+        # 요청 시간 로깅
+        print(
+            f"게시판 업데이트 요청 받음: {request_data.get('requestTime', '시간 정보 없음')}"
+        )
+
+        # 임의로 성공 또는 실패 결정 (테스트용)
+        # 실제 구현에서는 이 부분을 실제 게시판 업데이트 로직으로 대체
+        if random.random() > 0.5:  # 50% 확률로 성공
+            # 성공 응답
+            return {
+                "status": "success",
+                "message": "게시판 데이터가 성공적으로 업데이트되었습니다.",
+                "updatedAt": datetime.now().isoformat(),
+                "count": random.randint(1, 10),  # 임의의 업데이트 항목 수
+            }
+        else:
+            # 에러 발생 시뮬레이션
+            raise HTTPException(
+                status_code=500,
+                detail="게시판 데이터를 가져오는 중 서버 오류가 발생했습니다.",
+            )
+
+    except Exception as e:
+        # 에러 로깅
+        print(f"게시판 업데이트 처리 중 오류 발생: {str(e)}")
+        traceback.print_exc()
+
+        # 클라이언트에 에러 응답
+        raise HTTPException(
+            status_code=500, detail=f"게시판 업데이트에 실패했습니다: {str(e)}"
+        )
