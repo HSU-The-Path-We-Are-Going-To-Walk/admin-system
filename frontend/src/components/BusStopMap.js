@@ -10,6 +10,8 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
     const [activeCameraStop, setActiveCameraStop] = useState(null);
     const moveAnimationRef = useRef(null); // 이동 애니메이션 참조 추가
     const animationInProgressRef = useRef(false); // 애니메이션 진행 여부 추적
+    const mapInitializedRef = useRef(false); // 지도 초기화 여부 추적
+    const initialLoadComplete = useRef(false); // 초기 로딩 완료 여부
 
     // 카카오맵 초기화 - index.html에 이미 로드된 API 사용
     useEffect(() => {
@@ -29,10 +31,18 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
 
             const options = {
                 center: new window.kakao.maps.LatLng(34.6112, 127.2917), // 고흥군 중심 좌표
-                level: 9 // 지도 확대 레벨
+                level: 8 // 지도 확대 레벨 (3으로 설정 - 적당한 초기 줌 레벨)
             };
 
             const newMap = new window.kakao.maps.Map(container, options);
+
+            // 줌 컨트롤 추가
+            const zoomControl = new window.kakao.maps.ZoomControl();
+            newMap.addControl(zoomControl, window.kakao.maps.ControlPosition.RIGHT);
+
+            // 맵이 로드된 후 초기 설정 완료로 표시
+            mapInitializedRef.current = true;
+
             setMap(newMap);
 
             // 인포윈도우 생성
@@ -89,13 +99,24 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
             createMarker(stop);
         });
 
-        // 지도 범위를 모든 마커가 보이도록 설정
-        if (Object.keys(markersRef.current).length > 0) {
+        // 처음 로드될 때만 중심점 설정하고, 줌 레벨은 유지
+        if (!initialLoadComplete.current && Object.keys(markersRef.current).length > 0) {
+            // 모든 마커가 보이도록 bounds 설정
             const bounds = new window.kakao.maps.LatLngBounds();
             busStops.forEach(stop => {
                 bounds.extend(new window.kakao.maps.LatLng(stop.lat, stop.lng));
             });
+
+            // 현재 줌 레벨 저장
+            const currentLevel = map.getLevel();
+
+            // 일단 bounds로 중심점 이동
             map.setBounds(bounds);
+
+            // 그 후 줌 레벨은 원래 설정값으로 복구
+            map.setLevel(currentLevel);
+
+            initialLoadComplete.current = true;
         }
     }, [map, busStops]);
 
@@ -118,7 +139,6 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
                 </div>
             </div>
         </div>`;
-
     // 마커 생성 함수
     const createMarker = (stop) => {
         try {
@@ -339,7 +359,7 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
                 const φ1 = lat1 * Math.PI / 180;
                 const φ2 = lat2 * Math.PI / 180;
                 const Δφ = (lat2 - lat1) * Math.PI / 180;
-                const Δλ = (lon2 - lon1) * Math.PI / 180;
+                const Δλ = (lon1 - lon2) * Math.PI / 180;
 
                 const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
                     Math.cos(φ1) * Math.cos(φ2) *
