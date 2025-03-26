@@ -13,9 +13,10 @@ const SearchBar = ({ busStops, onSearch }) => {
             return;
         }
 
-        const filtered = busStops.filter(stop =>
-            stop.name.toLowerCase().includes(query.toLowerCase())
-        );
+        const filtered = busStops
+            .filter(stop => stop.name.toLowerCase().includes(query.toLowerCase()))
+            .sort((a, b) => a.name.localeCompare(b.name, 'ko')); // 한글 가나다순 정렬
+
         setSuggestions(filtered);
     }, [query, busStops]);
 

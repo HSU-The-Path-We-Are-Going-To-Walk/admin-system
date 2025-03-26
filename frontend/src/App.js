@@ -25,6 +25,27 @@ function App() {
     // 긴급 알림 활성화 상태 추가
     const [emergencyActive, setEmergencyActive] = useState(false);
 
+    // 설정 상태 추가
+    const [settings, setSettings] = useState({
+        showStopNames: true,      // 정류장 이름 표시
+        soundEnabled: true,       // 소리 알림
+        notificationDuration: 60,  // 알림 유지시간 (초)
+    });
+
+    // localStorage에서 설정 불러오기
+    useEffect(() => {
+        const savedSettings = localStorage.getItem('mapSettings');
+        if (savedSettings) {
+            setSettings(JSON.parse(savedSettings));
+        }
+    }, []);
+
+    // 설정 저장 함수
+    const handleSaveSettings = (newSettings) => {
+        setSettings(newSettings);
+        localStorage.setItem('mapSettings', JSON.stringify(newSettings));
+    };
+
     // 알림음 시스템 초기화
     useEffect(() => {
         emergencySound.init().then(success => {
@@ -78,23 +99,7 @@ function App() {
                 socket.onmessage = (event) => {
                     try {
                         const data = JSON.parse(event.data);
-                        const newNotification = {
-                            id: Date.now(),
-                            busStopId: data.busStopId,
-                            busStopName: data.busStopName,
-                            message: `${data.busStopName}에서 긴급 버튼이 눌렸습니다!`,
-                            timestamp: new Date().toLocaleTimeString(),
-                            lat: data.lat,
-                            lng: data.lng
-                        };
-
-                        // 알림 내역에 추가
-                        setEmergencyHistory(prev => [newNotification, ...prev]);
-
-                        setNotifications(prev => [newNotification, ...prev].slice(0, 10));
-
-                        // 긴급 알림 활성화 (화면 깜빡임 효과 시작)
-                        activateEmergencyEffect();
+                        handleEmergencyMessage(data);
                     } catch (error) {
                         console.error('웹소켓 메시지 처리 오류:', error);
                     }
@@ -134,8 +139,10 @@ function App() {
     const activateEmergencyEffect = () => {
         setEmergencyActive(true);
 
-        // 직접 만든 알림음 재생
-        emergencySound.play();
+        // 설정된 소리 활성화 여부에 따라 알림음 재생
+        if (settings.soundEnabled) {
+            emergencySound.play();
+        }
 
         // 5초 후 깜빡임 효과 종료
         setTimeout(() => {
@@ -208,6 +215,37 @@ function App() {
         activateEmergencyEffect();
     };
 
+    // WebSocket 메시지 처리 함수 수정
+    const handleEmergencyMessage = (data) => {
+        try {
+            const newNotification = {
+                id: Date.now(),
+                busStopId: data.busStopId,
+                busStopName: data.busStopName,
+                message: `${data.busStopName}에서 긴급 버튼이 눌렸습니다!`,
+                timestamp: new Date().toLocaleTimeString(),
+                lat: data.lat,
+                lng: data.lng
+            };
+
+            // 알림 내역에 추가
+            setEmergencyHistory(prev => [newNotification, ...prev]);
+            setNotifications(prev => [newNotification, ...prev].slice(0, 10));
+
+            // 긴급 알림 활성화
+            activateEmergencyEffect();
+
+            // 설정된 알림 유지시간에 따라 자동 제거 (0이면 수동으로만 제거)
+            if (settings.notificationDuration > 0) {
+                setTimeout(() => {
+                    removeNotification(newNotification.id);
+                }, settings.notificationDuration * 1000);
+            }
+        } catch (error) {
+            console.error('알림 처리 중 오류:', error);
+        }
+    };
+
     // 검색 핸들러 함수
     const handleSearch = (stop) => {
         // 사이드바 메뉴가 열려있으면 닫기
@@ -276,16 +314,19 @@ function App() {
                     <div className="menu-component bus-stops-list">
                         <h2>정류장 목록</h2>
                         <div className="bus-stops-container">
-                            {busStops.map(stop => (
-                                <div
-                                    key={stop.id}
-                                    className="bus-stop-item"
-                                    onClick={() => handleSearch(stop)}
-                                >
-                                    <div className="bus-stop-name">{stop.name}</div>
-                                    <div className="bus-stop-loc">위치: {stop.lat.toFixed(5)}, {stop.lng.toFixed(5)}</div>
-                                </div>
-                            ))}
+                            {busStops
+                                .slice() // 원본 배열을 변경하지 않도록 복사
+                                .sort((a, b) => a.name.localeCompare(b.name, 'ko')) // 한글 가나다순 정렬
+                                .map(stop => (
+                                    <div
+                                        key={stop.id}
+                                        className="bus-stop-item"
+                                        onClick={() => handleSearch(stop)}
+                                    >
+                                        <div className="bus-stop-name">{stop.name}</div>
+                                        <div className="bus-stop-loc">위치: {stop.lat.toFixed(5)}, {stop.lng.toFixed(5)}</div>
+                                    </div>
+                                ))}
                         </div>
                     </div>
                 );
@@ -297,7 +338,15 @@ function App() {
                         <div className="emergency-history-container">
                             {emergencyHistory.length > 0 ? (
                                 emergencyHistory.map(notification => (
-                                    <div key={notification.id} className="emergency-history-item">
+                                    <div
+                                        key={notification.id}
+                                        className="emergency-history-item"
+                                        onClick={() => {
+                                            handleNotificationClick(notification);
+                                            setActiveMenu(null); // 메뉴 닫기
+                                        }}
+                                        style={{ cursor: 'pointer' }}
+                                    >
                                         <div className="emergency-time">{notification.timestamp}</div>
                                         <div className="emergency-location">{notification.busStopName}</div>
                                         <div className="emergency-message">{notification.message}</div>
@@ -363,31 +412,29 @@ function App() {
                         <h2>설정</h2>
                         <div className="settings-container">
                             <div className="setting-group">
-                                <h3>지도 설정</h3>
-                                <div className="setting-item">
-                                    <label>
-                                        <input type="checkbox" defaultChecked />
-                                        정류장 이름 표시
-                                    </label>
-                                </div>
-                                <div className="setting-item">
-                                    <label>
-                                        <input type="checkbox" defaultChecked />
-                                        실시간 갱신
-                                    </label>
-                                </div>
-                            </div>
-                            <div className="setting-group">
                                 <h3>알림 설정</h3>
                                 <div className="setting-item">
                                     <label>
-                                        <input type="checkbox" defaultChecked />
+                                        <input
+                                            type="checkbox"
+                                            checked={settings.soundEnabled}
+                                            onChange={(e) => setSettings(prev => ({
+                                                ...prev,
+                                                soundEnabled: e.target.checked
+                                            }))}
+                                        />
                                         소리 알림
                                     </label>
                                 </div>
                                 <div className="setting-item">
                                     <label>알림 유지시간:
-                                        <select defaultValue="60">
+                                        <select
+                                            value={settings.notificationDuration}
+                                            onChange={(e) => setSettings(prev => ({
+                                                ...prev,
+                                                notificationDuration: parseInt(e.target.value)
+                                            }))}
+                                        >
                                             <option value="30">30초</option>
                                             <option value="60">1분</option>
                                             <option value="300">5분</option>
@@ -396,7 +443,16 @@ function App() {
                                     </label>
                                 </div>
                             </div>
-                            <button className="settings-save-btn">설정 저장</button>
+                            <button
+                                className="settings-save-btn"
+                                onClick={() => {
+                                    handleSaveSettings(settings);
+                                    // 설정 저장 후 성공 메시지 표시
+                                    alert('설정이 저장되었습니다.');
+                                }}
+                            >
+                                설정 저장
+                            </button>
                         </div>
                     </div>
                 );
@@ -476,6 +532,19 @@ function App() {
         }
     };
 
+    // 알림 클릭 핸들러 추가
+    const handleNotificationClick = (notification) => {
+        // 검색과 동일한 방식으로 위치 이동
+        const stop = {
+            id: notification.busStopId,
+            name: notification.busStopName,
+            lat: notification.lat,
+            lng: notification.lng,
+            timestamp: Date.now()
+        };
+        setSearchedStop(stop);
+    };
+
     return (
         <div className={`app ${activeMenu ? 'menu-active' : ''} ${emergencyActive ? 'emergency-active' : ''}`}>
             <button className="hamburger-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
@@ -531,6 +600,7 @@ function App() {
                 notifications={notifications}
                 onClose={removeNotification}
                 onAddDebug={addDebugNotification}
+                onNotificationClick={handleNotificationClick}
             />
         </div>
     );

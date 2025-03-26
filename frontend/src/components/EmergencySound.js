@@ -5,6 +5,7 @@ class EmergencySound {
         this.soundBuffer = null;
         this.isInitialized = false;
         this.volume = 0.4; // 기본 볼륨(0-1)
+        this.isEnabled = true; // 소리 활성화 여부
     }
 
     // 오디오 컨텍스트 초기화
@@ -141,6 +142,8 @@ class EmergencySound {
 
     // 알림음 재생
     play() {
+        if (!this.isEnabled) return; // 소리가 비활성화되었으면 재생하지 않음
+
         if (!this.isInitialized || !this.soundBuffer) {
             console.warn('알림음 시스템이 준비되지 않았습니다.');
             this.init().then(() => {
@@ -245,6 +248,11 @@ class EmergencySound {
         if (value >= 0 && value <= 1) {
             this.volume = value;
         }
+    }
+
+    // 소리 활성화/비활성화 설정
+    setEnabled(enabled) {
+        this.isEnabled = enabled;
     }
 }
 

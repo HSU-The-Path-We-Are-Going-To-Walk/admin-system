@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-const NotificationStack = ({ notifications, onClose, onAddDebug }) => {
+const NotificationStack = ({ notifications, onClose, onAddDebug, onNotificationClick }) => {
     // F2 키 이벤트 리스너 - 디버그 알림만 추가
     useEffect(() => {
         console.log("NotificationStack 컴포넌트가 마운트되었습니다.");
@@ -24,12 +24,30 @@ const NotificationStack = ({ notifications, onClose, onAddDebug }) => {
         };
     }, [onAddDebug]);
 
+    // 알림 클릭 핸들러
+    const handleNotificationClick = (notification, e) => {
+        // 닫기 버튼 클릭시에는 위치 이동하지 않음
+        if (e.target.className === 'notification-close') {
+            return;
+        }
+
+        // 위치 이동 및 알림 닫기
+        if (onNotificationClick) {
+            onNotificationClick(notification);
+        }
+        if (onClose) {
+            onClose(notification.id);
+        }
+    };
+
     return (
         <div className="notification-stack">
             {notifications.map(notification => (
                 <div
                     key={notification.id}
                     className="notification-item"
+                    onClick={(e) => handleNotificationClick(notification, e)}
+                    style={{ cursor: 'pointer' }}
                 >
                     <div className="notification-title">긴급 알림</div>
                     <div className="notification-message">{notification.message}</div>

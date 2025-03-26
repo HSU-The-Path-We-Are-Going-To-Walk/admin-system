@@ -482,6 +482,14 @@ body, html {
   border-left: 3px solid #dc3545;
   padding: 12px 15px;
   border-radius: 4px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.emergency-history-item:hover {
+  transform: translateX(5px);
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .emergency-time {
@@ -507,12 +515,17 @@ body, html {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  padding: 20px;
 }
 
 .setting-group {
   background-color: #f8f8f8;
   border-radius: 6px;
   padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
 }
 
 .setting-group h3 {
@@ -522,10 +535,16 @@ body, html {
   color: #444;
   border-bottom: 1px solid #ddd;
   padding-bottom: 8px;
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 1.1em;
 }
 
 .setting-item {
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
   display: flex;
   align-items: center;
 }
@@ -535,6 +554,10 @@ body, html {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
 }
 
 .setting-item select {
@@ -542,6 +565,11 @@ body, html {
   padding: 5px;
   border-radius: 4px;
   border: 1px solid #ddd;
+  margin-left: 10px;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
 }
 
 .settings-save-btn {
@@ -554,10 +582,26 @@ body, html {
   margin-top: 10px;
   font-weight: bold;
   transition: background-color 0.2s;
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
 }
 
 .settings-save-btn:hover {
   background-color: #0a58ca;
+  background-color: #0056b3;
+}
+
+.setting-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
 }
 
 /* 관리자 정보 스타일 */

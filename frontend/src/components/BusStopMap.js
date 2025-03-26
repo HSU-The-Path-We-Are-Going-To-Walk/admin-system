@@ -31,7 +31,7 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
 
             const options = {
                 center: new window.kakao.maps.LatLng(34.6112, 127.2917), // 고흥군 중심 좌표
-                level: 8 // 지도 확대 레벨 (3으로 설정 - 적당한 초기 줌 레벨)
+                level: 8 // 지도 확대 레벨
             };
 
             const newMap = new window.kakao.maps.Map(container, options);
