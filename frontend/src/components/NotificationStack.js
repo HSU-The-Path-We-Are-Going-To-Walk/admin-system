@@ -7,7 +7,7 @@ const NotificationStack = ({ notifications, onClose, onAddDebug }) => {
 
         // 디버그 알림 추가를 위한 키보드 이벤트 리스너
         const handleKeyDown = (event) => {
-            if (event.key === 'F2') {
+            if (event.key === 'F4') {
                 if (onAddDebug) {
                     console.log("디버그 알림 추가");
                     onAddDebug();

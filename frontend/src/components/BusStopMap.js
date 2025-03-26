@@ -7,6 +7,7 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
     const [selectedMarker, setSelectedMarker] = useState(null);
     const [infoWindow, setInfoWindow] = useState(null);
     const [mapError, setMapError] = useState(null);
+    const [activeCameraStop, setActiveCameraStop] = useState(null);
 
     // 카카오맵 초기화 - index.html에 이미 로드된 API 사용
     useEffect(() => {
@@ -39,12 +40,31 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
             });
             setInfoWindow(infoWindowInstance);
 
+            // 긴급 상황 처리 함수
+            window.handleEmergencyAction = function (stopId) {
+                const stop = busStops.find(s => s.id === stopId);
+                if (stop) {
+                    // 여기에 긴급 상황 처리 로직 추가
+                    console.log(`긴급 상황 처리 - 정류장 ID: ${stopId}`);
+                    // 예: 관리자에게 알림, 비상 연락망 가동 등
+                    alert(`${stop.name} 정류장의 긴급 상황을 처리합니다.`);
+                }
+            };
+
+            // 카메라 연결 함수 업데이트
+            window.connectToCamera = function (stopId) {
+                const stop = busStops.find(s => s.id === stopId);
+                if (stop) {
+                    setActiveCameraStop(stop);
+                }
+            };
+
             console.log('지도가 성공적으로 로드되었습니다');
         } catch (error) {
             console.error('지도 초기화 오류:', error);
             setMapError('지도를 초기화하는 중 오류가 발생했습니다: ' + error.message);
         }
-    }, []);
+    }, [busStops]);
 
     // 버스 정류장 마커 생성
     useEffect(() => {
@@ -77,12 +97,30 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
         }
     }, [map, busStops]);
 
+    // 마커 클릭 이벤트 콘텐츠 템플릿
+    const getInfoWindowContent = (stop) => `
+        <div class="bus-stop-popup">
+            <div class="popup-header">
+                <h3>${stop.name}</h3>
+            </div>
+            <div class="popup-content">
+                <p>위치: ${stop.lat.toFixed(5)}, ${stop.lng.toFixed(5)}</p>
+                <div class="popup-buttons">
+                    <button class="camera-connect-btn" onclick="window.connectToCamera(${stop.id})">
+                        <img src="/camera-icon.png" alt="Camera" onerror="this.style.display='none'; this.nextElementSibling.style.margin='0'" style="width:16px; height:16px; margin-right:4px; vertical-align:middle;">
+                        <span>카메라 연결</span>
+                    </button>
+                    <button class="emergency-btn" onclick="window.simulateEmergency(${stop.id})">
+                        긴급 버튼 테스트
+                    </button>
+                </div>
+            </div>
+        </div>`;
+
     // 마커 생성 함수
     const createMarker = (stop) => {
         try {
             const position = new window.kakao.maps.LatLng(stop.lat, stop.lng);
-
-            // 간단한 원형 마커 생성 (이미지 파일 대신)
             const marker = new window.kakao.maps.Marker({
                 position: position,
                 title: stop.name,
@@ -91,29 +129,15 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
 
             marker.setMap(map);
 
-            // 마커 클릭 이벤트
+            // 마커 클릭 이벤트 - mouseEvent 파라미터 제거
             window.kakao.maps.event.addListener(marker, 'click', () => {
-                setSelectedMarker(stop);
-
-                // 인포윈도우 내용
-                const content = `
-                    <div class="bus-stop-popup">
-                        <div class="popup-header">
-                            <h3>${stop.name}</h3>
-                        </div>
-                        <div class="popup-content">
-                            <p>위치: ${stop.lat.toFixed(5)}, ${stop.lng.toFixed(5)}</p>
-                            <button class="emergency-btn" onclick="window.simulateEmergency(${stop.id})">
-                                긴급 버튼 테스트
-                            </button>
-                        </div>
-                    </div>
-                `;
-
                 if (infoWindow) {
-                    infoWindow.setContent(content);
-                    infoWindow.open(map, marker);
+                    infoWindow.close();
                 }
+
+                infoWindow.setContent(getInfoWindowContent(stop));
+                infoWindow.open(map, marker);
+                setSelectedMarker(stop);
             });
 
             // 마커 정보 저장
@@ -179,20 +203,8 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
                 window.kakao.maps.event.addListener(newMarker, 'click', () => {
                     setSelectedMarker(stop);
 
-                    // 인포윈도우 내용
-                    const content = `
-                        <div class="bus-stop-popup">
-                            <div class="popup-header">
-                                <h3>${stop.name}</h3>
-                            </div>
-                            <div class="popup-content">
-                                <p>위치: ${stop.lat.toFixed(5)}, ${stop.lng.toFixed(5)}</p>
-                                <button class="emergency-btn" onclick="window.simulateEmergency(${stop.id})">
-                                    긴급 버튼 테스트
-                                </button>
-                            </div>
-                        </div>
-                    `;
+                    // 인포윈도우 내용 - 모든 상황에서 동일한 내용 표시
+                    const content = getInfoWindowContent(stop);
 
                     if (infoWindow) {
                         infoWindow.setContent(content);
@@ -222,9 +234,86 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
                 }
             });
         } catch (error) {
-            console.error('긴급 마커 업데이트 중 오류:', error);
+            console.error('긴급 마커 업데이트 중 오류:', error);;
         }
     }, [map, activeEmergencies]);
+
+    // 카메라 화면을 표시할 오버레이
+    useEffect(() => {
+        if (!map || !activeCameraStop) return;
+
+        try {
+            // 카메라 화면 오버레이 생성
+            const overlayContent = document.createElement('div');
+            overlayContent.className = 'camera-overlay';
+
+            overlayContent.innerHTML = `
+                <div class="camera-view">
+                    <div class="camera-header">
+                        <h3>${activeCameraStop.name} - 실시간 카메라</h3>
+                        <button class="camera-close-btn" onclick="this.parentElement.parentElement.parentElement.remove()">
+                            X
+                        </button>
+                    </div>
+                    <div class="camera-content">
+                        <div class="camera-placeholder">
+                            <p>실제 카메라 화면이 여기에 표시됩니다</p>
+                            <p>정류장 ID: ${activeCameraStop.id}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 오버레이에 닫기 이벤트 추가
+            const closeBtn = overlayContent.querySelector('.camera-close-btn');
+            closeBtn.addEventListener('click', () => {
+                overlayContent.classList.remove('active');
+                setTimeout(() => {
+                    if (overlayContent.parentNode) {
+                        overlayContent.parentNode.removeChild(overlayContent);
+                    }
+                    setActiveCameraStop(null);
+                }, 500);
+            });
+
+            // 마커의 실제 위치를 가져옴
+            const markerInfo = markersRef.current[activeCameraStop.id];
+            if (!markerInfo || !markerInfo.marker) {
+                throw new Error("마커를 찾을 수 없습니다");
+            }
+
+            // DOM에 추가하기 전에 초기 위치 설정
+            const markerPosition = markerInfo.marker.getPosition();
+            const projection = map.getProjection();
+            const markerPoint = projection.pointFromCoords(markerPosition);
+            const mapContainer = document.getElementById('map');
+            const mapRect = mapContainer.getBoundingClientRect();
+
+            // body에 추가
+            document.body.appendChild(overlayContent);
+
+            // 초기 위치 설정 (마커 위치)
+            overlayContent.style.left = (markerPoint.x + mapRect.left) + 'px';
+            overlayContent.style.top = (markerPoint.y + mapRect.top) + 'px';
+
+            // 애니메이션 시작 (약간의 지연을 주어 초기 위치가 적용되도록 함)
+            setTimeout(() => {
+                overlayContent.classList.add('active');
+                overlayContent.style.left = '50%';
+                overlayContent.style.top = '50%';
+                overlayContent.style.transform = 'translate(-50%, -50%) scale(1)';
+                overlayContent.style.opacity = '1';
+            }, 50);
+
+            return () => {
+                if (overlayContent.parentNode) {
+                    overlayContent.parentNode.removeChild(overlayContent);
+                }
+            };
+        } catch (error) {
+            console.error("카메라 오버레이 생성 중 오류:", error);
+        }
+    }, [map, activeCameraStop]);
 
     return (
         <>
