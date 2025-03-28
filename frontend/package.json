@@ -8,7 +8,8 @@
         "axios": "^1.4.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "react-scripts": "5.0.1"
+        "react-scripts": "5.0.1",
+        "webex": "^2.31.0"
     },
     "scripts": {
         "start": "WATCHPACK_POLLING=true FAST_REFRESH=false CHOKIDAR_USEPOLLING=true GENERATE_SOURCEMAP=false react-scripts --max_old_space_size=4096 start",
