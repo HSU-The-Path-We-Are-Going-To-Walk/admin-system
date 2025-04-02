@@ -3,6 +3,7 @@ import BusStopMap from './components/BusStopMap';
 import Sidebar from './components/Sidebar';
 import NotificationStack from './components/NotificationStack';
 import SearchBar from './components/SearchBar';
+import CiscoRoomCamera from './components/CiscoRoomCamera';
 import emergencySound from './components/EmergencySound';
 import axios from 'axios';
 import './App.css';
@@ -24,6 +25,8 @@ function App() {
     const [bulletinUpdateMessage, setBulletinUpdateMessage] = useState('');
     // 긴급 알림 활성화 상태 추가
     const [emergencyActive, setEmergencyActive] = useState(false);
+    // 카메라 연결 상태 추가
+    const [activeCameraStop, setActiveCameraStop] = useState(null);
 
     // 설정 상태 추가
     const [settings, setSettings] = useState({
@@ -505,6 +508,9 @@ function App() {
                                         <strong>알림 관리:</strong> 우측 하단에 표시되는 긴급 알림은 X 버튼을 클릭하여 닫을 수 있습니다.
                                     </li>
                                     <li>
+                                        <strong>카메라 연결:</strong> 정류장 정보 창에서 카메라 연결 버튼을 클릭하면 해당 정류장의 실시간 화면을 볼 수 있습니다.
+                                    </li>
+                                    <li>
                                         <strong>게시판 업데이트:</strong> 메뉴에서 게시판 업데이트 버튼을 클릭하여 최신 공지사항을 업데이트할 수 있습니다.
                                     </li>
                                 </ul>
@@ -545,6 +551,28 @@ function App() {
         setSearchedStop(stop);
     };
 
+    // 카메라 연결 핸들러 함수
+    const handleConnectToCamera = (busStop) => {
+        console.log(`카메라 연결 요청: ${busStop.name} (ID: ${busStop.id})`);
+        setActiveCameraStop(busStop);
+    };
+
+    // 해당 함수를 window 객체에 연결
+    useEffect(() => {
+        window.connectToCamera = (stopId) => {
+            const stop = busStops.find(s => s.id === stopId);
+            if (stop) {
+                handleConnectToCamera(stop);
+            } else {
+                console.error(`ID가 ${stopId}인 버스 정류장을 찾을 수 없습니다.`);
+            }
+        };
+
+        return () => {
+            delete window.connectToCamera;
+        };
+    }, [busStops]);
+
     return (
         <div className={`app ${activeMenu ? 'menu-active' : ''} ${emergencyActive ? 'emergency-active' : ''}`}>
             <button className="hamburger-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
@@ -577,6 +605,18 @@ function App() {
                 <div className="emergency-overlay"></div>
             )}
 
+            {/* 카메라 연결 오버레이 */}
+            {activeCameraStop && (
+                <div className="active-camera-overlay">
+                    <div className="active-camera-container">
+                        <CiscoRoomCamera
+                            busStop={activeCameraStop}
+                            onClose={() => setActiveCameraStop(null)}
+                        />
+                    </div>
+                </div>
+            )}
+
             {/* 검색창 추가 */}
             <div className="search-bar-wrapper">
                 <SearchBar busStops={busStops} onSearch={handleSearch} />
@@ -593,7 +633,11 @@ function App() {
                     <p>{loadError}</p>
                 </div>
             ) : (
-                <BusStopMap busStops={busStops} searchedStop={searchedStop} activeEmergencies={notifications} />
+                <BusStopMap
+                    busStops={busStops}
+                    searchedStop={searchedStop}
+                    activeEmergencies={notifications}
+                />
             )}
 
             <NotificationStack

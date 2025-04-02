@@ -1383,350 +1383,262 @@ body, html {
     background-color: #0056b3;
 }
 
-/* Cisco Room Camera 관련 스타일 */
-.cisco-room-camera {
+/* Cisco Camera Component Styles */
+.active-camera-overlay {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90%;
-  max-width: 900px;
-  height: 80vh;
-  max-height: 600px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  z-index: 2000;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1100;
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  animation: camera-modal-in 0.3s ease-out;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
 }
 
-@keyframes camera-modal-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -60%);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
+.active-camera-container {
+  width: 90%;
+  max-width: 1000px;
+  height: 75vh;
+  background-color: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  animation: zoomIn 0.3s ease;
+}
+
+.cisco-camera-view {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .camera-header {
+  background-color: #1a1a1a;
+  color: white;
+  padding: 10px 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
-  background-color: #0d6efd;
-  color: white;
-  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid #333;
 }
 
-.camera-header h2 {
+.camera-header h3 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 500;
+  font-size: 16px;
+  color: #f0f0f0;
 }
 
-.close-btn {
+.camera-close-btn {
   background: none;
   border: none;
-  color: white;
-  font-size: 24px;
+  color: #f0f0f0;
+  font-size: 22px;
   cursor: pointer;
-  padding: 0;
-  line-height: 1;
+  padding: 0 5px;
 }
 
-.camera-body {
+.camera-close-btn:hover {
+  color: #ff4040;
+}
+
+.camera-content {
   flex: 1;
-  padding: 20px;
-  overflow-y: auto;
+  background-color: #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.camera-info {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 8px 12px;
+  border-radius: 4px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.camera-info span {
+  color: #aaa;
+  font-size: 12px;
+}
+
+.camera-connecting {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  height: 100%;
+  color: #f0f0f0;
 }
 
-.connection-options {
-  text-align: center;
-  width: 100%;
-  max-width: 400px;
-}
-
-.connection-options h3 {
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.connection-btn {
-  display: block;
-  width: 100%;
-  padding: 15px 20px;
-  margin: 10px 0;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.direct-btn {
-  background-color: #0d6efd;
-  color: white;
-}
-
-.direct-btn:hover {
-  background-color: #0b5ed7;
-}
-
-.webex-btn {
-  background-color: #13c13a;
-  color: white;
-}
-
-.webex-btn:hover {
-  background-color: #10a832;
-}
-
-.connecting-indicator {
-  text-align: center;
-  padding: 20px;
-  color: #333;
-}
-
-.spinner {
-  display: inline-block;
+.camera-connecting .spinner {
   width: 50px;
   height: 50px;
-  border: 4px solid rgba(13, 110, 253, 0.2);
-  border-radius: 50%;
+  border: 4px solid rgba(0, 123, 255, 0.2);
   border-top: 4px solid #0d6efd;
+  border-radius: 50%;
+  margin-bottom: 20px;
   animation: spin 1s linear infinite;
-  margin-bottom: 15px;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.camera-content {
-  width: 100%;
-}
-
-.device-info {
-  background-color: #f8f9fa;
-  padding: 10px 15px;
-  border-radius: 6px;
-  margin-bottom: 15px;
-}
-
-.device-info h3 {
-  margin: 0;
-  font-size: 18px;
-  color: #333;
-}
-
-.device-info p {
-  margin: 5px 0 0;
-  font-size: 14px;
-  color: #666;
-}
-
-.video-container {
-  width: 100%;
-  height: 400px;
-  background-color: #000;
-  border-radius: 6px;
-  overflow: hidden;
-  position: relative;
-}
-
-.video-container video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  background-color: #111;
-}
-
-.camera-controls {
-  position: absolute;
-  bottom: 20px;
-  left: 0;
-  right: 0;
+.camera-error {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 10px;
+  height: 100%;
+  color: #f0f0f0;
+  text-align: center;
   padding: 0 20px;
 }
 
-.camera-controls button {
-  background-color: rgba(0, 0, 0, 0.5);
+.camera-error .error-icon {
+  width: 60px;
+  height: 60px;
+  background-color: #dc3545;
   color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 8px 15px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
+  font-size: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
-.camera-controls button:hover {
-  background-color: rgba(0, 0, 0, 0.7);
+.camera-error p {
+  margin-bottom: 20px;
+  font-size: 16px;
 }
 
-.emergency-button {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+.camera-error .retry-button {
   background-color: #dc3545;
   color: white;
   border: none;
+  padding: 8px 20px;
   border-radius: 4px;
-  padding: 8px 15px;
-  font-size: 14px;
-  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  font-size: 14px;
 }
 
-.emergency-button:hover {
+.camera-error .retry-button:hover {
   background-color: #c82333;
 }
 
-.webex-content {
+.video-feed {
+  width: 100%;
+  height: 100%;
+  background-color: #111;
+  position: relative;
+}
+
+.video-feed video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.simulated-feed {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #111 0%, #222 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Add a dynamic, pulsing grid pattern for simulated feed */
+.simulated-feed::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    linear-gradient(to right, transparent 98%, rgba(0, 123, 255, 0.2) 100%),
+    linear-gradient(to bottom, transparent 98%, rgba(0, 123, 255, 0.2) 100%);
+  background-size: 50px 50px;
+  opacity: 0.3;
+  pointer-events: none;
+  animation: gridPulse 10s infinite linear;
+}
+
+@keyframes gridPulse {
+  0% { opacity: 0.2; }
+  50% { opacity: 0.4; }
+  100% { opacity: 0.2; }
+}
+
+.camera-overlay-text {
   text-align: center;
-}
-
-.webex-content h3 {
-  color: #333;
-  margin-bottom: 10px;
-}
-
-.webex-join-btn {
-  background-color: #13c13a;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 12px 25px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 20px;
-}
-
-.webex-join-btn:hover {
-  background-color: #10a832;
-}
-
-.connection-error {
-  text-align: center;
-  color: #dc3545;
+  color: #0d6efd;
+  text-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+  z-index: 5;
   padding: 20px;
 }
 
-.error-icon {
-  font-size: 40px;
-  margin-bottom: 10px;
+.camera-overlay-text p {
+  margin: 10px 0;
+  font-size: 24px;
 }
 
-.retry-btn {
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 8px 15px;
+.camera-overlay-text .camera-details {
   font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 15px;
+  color: #aaa;
+  margin-top: 40px;
 }
 
-.retry-btn:hover {
-  background-color: #5a6268;
+/* Add a scanning line effect to simulate camera feed */
+.simulated-feed::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: rgba(0, 123, 255, 0.5);
+  box-shadow: 0 0 10px 2px rgba(0, 123, 255, 0.7);
+  animation: scanLine 3s infinite linear;
 }
 
-.connection-footer {
-  padding: 15px 20px;
-  background-color: #f8f9fa;
-  border-top: 1px solid #dee2e6;
-  text-align: center;
+@keyframes scanLine {
+  0% { top: 0; }
+  100% { top: 100%; }
 }
 
-.disconnect-btn {
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 8px 15px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
+@keyframes zoomIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
-.disconnect-btn:hover {
-  background-color: #5a6268;
-}
-
-/* 모바일 대응 */
-@media (max-width: 768px) {
-  .cisco-room-camera {
+/* Mobile Responsiveness for Camera View */
+@media screen and (max-width: 768px) {
+  .active-camera-container {
     width: 95%;
-    height: 85vh;
-    max-height: none;
+    height: 60vh;
   }
   
-  .camera-controls {
-    flex-wrap: wrap;
+  .camera-overlay-text p {
+    font-size: 18px;
   }
   
-  .video-container {
-    height: 50vh;
+  .camera-overlay-text .camera-details {
+    font-size: 12px;
   }
-}
-
-/* 실제 장치(송곡 정류장) 표시를 위한 스타일 */
-.real-device-badge {
-  background-color: #ffcc00;
-  color: #333;
-  font-size: 12px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  margin-left: 10px;
-  font-weight: bold;
-}
-
-.real-device-notice {
-  background-color: #fff3cd;
-  border-left: 4px solid #ffcc00;
-  padding: 10px;
-  margin-bottom: 15px;
-  border-radius: 4px;
-}
-
-.real-device-tag {
-  color: #664d00;
-  font-weight: bold;
-  background-color: #fff3cd;
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin-top: 8px;
-}
-
-.cisco-room-camera.real-device .camera-header {
-  background-color: #0056b3;
-}
-
-.cisco-room-camera.real-device .direct-btn {
-  background-color: #0056b3;
-}
-
-.cisco-room-camera.real-device .direct-btn:hover {
-  background-color: #003d7f;
 }

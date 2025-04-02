@@ -8,16 +8,11 @@ ENV CHOKIDAR_USEPOLLING=true
 ENV WATCHPACK_POLLING=true
 ENV FAST_REFRESH=false
 
-# 빌드에 필요한 도구 설치 (Webex 모듈 의존성)
-RUN apk add --no-cache python3 make g++ git
-
 # 패키지 설치 파일 복사 및 설치
 COPY package*.json ./
-
-# 명시적으로 Webex와 지도 SDK 설치 - 의존성 문제 해결
 RUN npm install
+# 명시적으로 카카오 맵 SDK 패키지 설치
 RUN npm install react-kakao-maps-sdk --force
-RUN npm install webex --legacy-peer-deps
 
 # 전체 애플리케이션 복사
 COPY . .

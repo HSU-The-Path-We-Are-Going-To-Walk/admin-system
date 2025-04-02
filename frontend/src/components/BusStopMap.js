@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import CiscoRoomCamera from './CiscoRoomCamera';
 
 const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
     const mapRef = useRef(null);
@@ -498,10 +497,71 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
         }
     }, [map, activeEmergencies]);
 
-    // 카메라 화면을 표시할 오버레이 기존 코드는 CiscoRoomCamera 컴포넌트로 대체
-    const handleCloseCameraView = () => {
-        setActiveCameraStop(null);
-    };
+    // 카메라 화면을 표시할 오버레이
+    useEffect(() => {
+        if (!map || !activeCameraStop) return;
+
+        try {
+            // 카메라 화면 오버레이 생성
+            const overlayContent = document.createElement('div');
+            overlayContent.className = 'camera-overlay';
+
+            overlayContent.innerHTML = `
+                <div class="camera-view">
+                    <div class="camera-header">
+                        <h3>${activeCameraStop.name} - 실시간 카메라</h3>
+                        <button class="camera-close-btn" onclick="this.parentElement.parentElement.parentElement.remove()">
+                            X
+                        </button>
+                    </div>
+                    <div class="camera-content">
+                        <div class="camera-placeholder">
+                            <p>실제 카메라 화면이 여기에 표시됩니다</p>
+                            <p>정류장 ID: ${activeCameraStop.id}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 오버레이에 닫기 이벤트 추가
+            const closeBtn = overlayContent.querySelector('.camera-close-btn');
+            closeBtn.addEventListener('click', () => {
+                overlayContent.classList.remove('active');
+                setTimeout(() => {
+                    if (overlayContent.parentNode) {
+                        overlayContent.parentNode.removeChild(overlayContent);
+                    }
+                    setActiveCameraStop(null);
+                }, 500);
+            });
+
+            // 마커의 정보를 찾음
+            const markerInfo = markersRef.current[activeCameraStop.id];
+            if (!markerInfo || !markerInfo.marker) {
+                throw new Error("마커를 찾을 수 없습니다");
+            }
+
+            // DOM에 먼저 추가 (중앙에 바로 표시)
+            document.body.appendChild(overlayContent);
+
+            // 중앙에 바로 표시 (처음부터 위치를 50%로 고정)
+            overlayContent.style.left = '50%';
+            overlayContent.style.top = '50%';
+
+            // 애니메이션 시작 (작은 크기에서 큰 크기로)
+            requestAnimationFrame(() => {
+                overlayContent.classList.add('active');
+            });
+
+            return () => {
+                if (overlayContent.parentNode) {
+                    overlayContent.parentNode.removeChild(overlayContent);
+                }
+            };
+        } catch (error) {
+            console.error("카메라 오버레이 생성 중 오류:", error);
+        }
+    }, [map, activeCameraStop]);
 
     // 컴포넌트 언마운트 시 애니메이션 정리
     useEffect(() => {
@@ -519,16 +579,6 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
                 </div>
             )}
             <div id="map" className="map-container"></div>
-
-            {/* 시스코 카메라 연결 컴포넌트 */}
-            {activeCameraStop && (
-                <CiscoRoomCamera
-                    stopId={activeCameraStop.id}
-                    stopName={activeCameraStop.name}
-                    isActive={!!activeCameraStop}
-                    onClose={handleCloseCameraView}
-                />
-            )}
         </>
     );
 };

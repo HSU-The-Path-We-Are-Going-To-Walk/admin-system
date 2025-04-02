@@ -4,7 +4,3 @@ websockets==11.0.3
 sqlalchemy==2.0.12
 pydantic==1.10.7
 python-dotenv==1.0.0
-# Cisco 장치 제어를 위한 라이브러리
-requests==2.28.2
-aiohttp==3.8.4
-webexteamssdk==1.6.1
