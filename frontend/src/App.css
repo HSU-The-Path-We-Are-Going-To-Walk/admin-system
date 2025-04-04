@@ -1642,3 +1642,315 @@ body, html {
     font-size: 12px;
   }
 }
+
+/* Webex Device Connect Styles */
+.webex-device-view {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #000;
+  color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.camera-header {
+  background-color: #1a1a1a;
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #333;
+}
+
+.call-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mute-button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.mute-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.mute-button.muted {
+  background-color: #dc3545;
+}
+
+.webex-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Idle state - connection prompt */
+.webex-connect-prompt {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.webex-connect-prompt h3 {
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+.webex-connect-prompt p {
+  margin-bottom: 30px;
+  max-width: 500px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.webex-connect-btn {
+  padding: 12px 24px;
+  background-color: #00bceb; /* Cisco Webex blue */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.webex-connect-btn:hover {
+  background-color: #0097c3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Connecting state */
+.webex-connecting {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.webex-connecting .spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid rgba(0, 188, 235, 0.2);
+  border-top: 5px solid #00bceb;
+  border-radius: 50%;
+  margin-bottom: 30px;
+  animation: spin 1s linear infinite;
+}
+
+.connect-details {
+  margin-top: 15px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Connected state - active call */
+.webex-active-call {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.video-container {
+  flex: 1;
+  position: relative;
+  min-height: 60%;
+}
+
+.remote-video {
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+}
+
+.local-video-container {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  width: 160px;
+  height: 120px;
+  border: 2px solid #00bceb;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.local-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background-color: #333;
+}
+
+.local-video-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 4px 8px;
+  font-size: 10px;
+  text-align: center;
+}
+
+/* Chat section */
+.webex-chat {
+  height: 200px;
+  border-top: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  background-color: #1a1a1a;
+}
+
+.system-message {
+  text-align: center;
+  color: #aaa;
+  font-size: 12px;
+  margin: 10px 0;
+  padding: 5px;
+}
+
+.admin-message {
+  background-color: #00bceb;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 16px;
+  border-bottom-right-radius: 4px;
+  margin: 5px 0;
+  margin-left: auto;
+  max-width: 80%;
+  align-self: flex-end;
+  word-break: break-word;
+  display: inline-block;
+  float: right;
+  clear: both;
+}
+
+.device-message {
+  background-color: #333;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 16px;
+  border-bottom-left-radius: 4px;
+  margin: 5px 0;
+  max-width: 80%;
+  word-break: break-word;
+  display: inline-block;
+  float: left;
+  clear: both;
+}
+
+.chat-input-form {
+  display: flex;
+  padding: 10px;
+  background-color: #1a1a1a;
+  border-top: 1px solid #333;
+}
+
+.chat-input-form input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #333;
+  background-color: #333;
+  color: #fff;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+.chat-input-form button {
+  padding: 8px 16px;
+  background-color: #00bceb;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.chat-input-form button:hover {
+  background-color: #0097c3;
+}
+
+/* Error state */
+.webex-error {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.error-icon {
+  width: 60px;
+  height: 60px;
+  background-color: #dc3545;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  border-radius: 50%;
+  margin-bottom: 20px;
+}
+
+.webex-error p {
+  margin-bottom: 30px;
+  max-width: 400px;
+}
+
+.retry-button {
+  padding: 10px 20px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retry-button:hover {
+  background-color: #c82333;
+}
+
+/* Live indicator styles */
+.live-indicator {
+  color: #dc3545;
+  font-weight: bold;
+  animation: pulsate 1.5s infinite;
+}
+
+@keyframes pulsate {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}

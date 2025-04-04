@@ -1,0 +1,263 @@
+.App {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  text-align: center;
+  background-color: #f0f0f0;
+}
+
+.App-header {
+  background-color: #0066cc;
+  padding: 1.5rem;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.App-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.App-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.device-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.App-footer {
+  background-color: #343a40;
+  color: white;
+  padding: 1rem;
+  font-size: 0.875rem;
+}
+
+/* Device Info Component */
+.device-info {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.device-info h2 {
+  margin-top: 0;
+  font-size: 1.4rem;
+  color: #333;
+}
+
+.device-status {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.status-online {
+  background-color: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+}
+
+.status-offline {
+  background-color: rgba(108, 117, 125, 0.2);
+  color: #6c757d;
+}
+
+/* Webex Connection Component */
+.webex-connection {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.webex-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.status-disconnected {
+  background-color: #6c757d;
+}
+
+.status-connecting {
+  background-color: #ffc107;
+  animation: blink 1s infinite;
+}
+
+.status-connected {
+  background-color: #28a745;
+}
+
+@keyframes blink {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+.webex-connection p {
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+/* Emergency Button Component */
+.emergency-button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.emergency-button {
+  background-color: #dc3545;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 1.5rem 3rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(220, 53, 69, 0.5);
+}
+
+.emergency-button:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(220, 53, 69, 0.6);
+}
+
+.emergency-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.6);
+}
+
+.last-emergency {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+/* Message Log Component */
+.message-log {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.message-log h2 {
+  margin-top: 0;
+  font-size: 1.4rem;
+  color: #333;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-y: auto;
+}
+
+.message {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  max-width: 90%;
+  word-break: break-word;
+  position: relative;
+  text-align: left;
+}
+
+.message-timestamp {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+  text-align: right;
+}
+
+.message-system {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  align-self: center;
+  font-style: italic;
+  font-size: 0.875rem;
+  border: 1px solid #e9ecef;
+}
+
+.message-admin {
+  background-color: #e3f2fd;
+  color: #0d6efd;
+  align-self: flex-start;
+  border-left: 3px solid #0d6efd;
+}
+
+.message-emergency {
+  background-color: #f8d7da;
+  color: #dc3545;
+  align-self: center;
+  border: 1px solid #f5c2c7;
+  font-weight: 600;
+}
+
+.message-error {
+  background-color: #f8d7da;
+  color: #dc3545;
+  align-self: center;
+  border: 1px solid #f5c2c7;
+}
+
+.message-user {
+  background-color: #d1e7dd;
+  color: #146c43;
+  align-self: flex-end;
+  border-right: 3px solid #146c43;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+  .App-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .App-main {
+    padding: 1rem;
+  }
+  
+  .device-controls {
+    gap: 1rem;
+  }
+  
+  .emergency-button {
+    padding: 1.2rem 2rem;
+    font-size: 1.1rem;
+  }
+}

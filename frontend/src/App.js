@@ -3,7 +3,7 @@ import BusStopMap from './components/BusStopMap';
 import Sidebar from './components/Sidebar';
 import NotificationStack from './components/NotificationStack';
 import SearchBar from './components/SearchBar';
-import CiscoRoomCamera from './components/CiscoRoomCamera';
+import WebexDeviceConnect from './components/WebexDeviceConnect';
 import emergencySound from './components/EmergencySound';
 import axios from 'axios';
 import './App.css';
@@ -609,7 +609,7 @@ function App() {
             {activeCameraStop && (
                 <div className="active-camera-overlay">
                     <div className="active-camera-container">
-                        <CiscoRoomCamera
+                        <WebexDeviceConnect
                             busStop={activeCameraStop}
                             onClose={() => setActiveCameraStop(null)}
                         />

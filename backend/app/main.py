@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import random
 import asyncio
@@ -50,6 +50,12 @@ async def get_bus_stops():
     return get_all_bus_stops()
 
 
+@app.get("/api/health")
+async def health_check():
+    """시스템 상태 확인용 엔드포인트"""
+    return {"status": "ok", "timestamp": datetime.now().isoformat()}
+
+
 @app.websocket("/ws/emergency")
 async def emergency_notification(websocket: WebSocket):
     await manager.connect(websocket)
@@ -62,9 +68,10 @@ async def emergency_notification(websocket: WebSocket):
         manager.disconnect(websocket)
 
 
-# 긴급 버튼 신호 시뮬레이션용 API
+# 긴급 버튼 신호 시뮬레이션용 API - 디바이스에서도 이 엔드포인트를 호출하도록 함
 @app.post("/api/simulate-emergency/{bus_stop_id}")
 async def simulate_emergency(bus_stop_id: int):
+    print(f"비상 알림 수신: 정류장 ID {bus_stop_id}")
     bus_stop = get_bus_stop_by_id(bus_stop_id)
     if bus_stop:
         # WebSocket을 통해 클라이언트에 알림
@@ -75,11 +82,14 @@ async def simulate_emergency(bus_stop_id: int):
                     "busStopName": bus_stop["name"],
                     "lat": bus_stop["lat"],
                     "lng": bus_stop["lng"],
-                    "timestamp": None,  # 클라이언트에서 시간 생성
+                    "timestamp": datetime.now().isoformat(),  # 서버에서 시간 생성
                 }
             )
         )
+        print(f"비상 알림 전송 완료: {bus_stop['name']}")
         return {"message": f"Emergency signal sent for bus stop: {bus_stop['name']}"}
+
+    print(f"버스 정류장을 찾을 수 없음: ID {bus_stop_id}")
     return {"error": "Bus stop not found"}
 
 
