@@ -5,6 +5,7 @@ import NotificationStack from './components/NotificationStack';
 import SearchBar from './components/SearchBar';
 import WebexDeviceConnect from './components/WebexDeviceConnect';
 import emergencySound from './components/EmergencySound';
+import API_CONFIG from './config'; // 설정 파일 추가
 import axios from 'axios';
 import './App.css';
 
@@ -269,8 +270,8 @@ function App() {
         setBulletinUpdateMessage('게시판 업데이트 중...');
 
         try {
-            // 서버 API 엔드포인트 설정 (나중에 실제 주소로 변경)
-            const apiUrl = 'http://localhost:8000/update-notices';
+            // 설정 파일에서 API URL 가져오기
+            const apiUrl = API_CONFIG.NOTICES_SYNC_URL;
 
             // API 호출
             const response = await axios.post(apiUrl, {
