@@ -1,22 +1,21 @@
-FROM node:16-alpine
+FROM node:18-alpine
 
 WORKDIR /app
 
-# 필요한 환경 변수 설정
-ENV GENERATE_SOURCEMAP=false
-ENV CHOKIDAR_USEPOLLING=true
-ENV WATCHPACK_POLLING=true
-ENV FAST_REFRESH=false
+# 패키지 설치 전 의존성 파일 복사
+COPY package.json package-lock.json* ./
 
-# 패키지 설치 파일 복사 및 설치
-COPY package*.json ./
-RUN npm install
-# 명시적으로 카카오 맵 SDK 패키지 설치
-RUN npm install react-kakao-maps-sdk --force
+# customize-cra 및 react-app-rewired 먼저 설치
+RUN npm install --save react-app-rewired customize-cra
 
-# 전체 애플리케이션 복사
+# 나머지 의존성 설치
+RUN npm install --legacy-peer-deps
+
+# 소스 코드 복사
 COPY . .
 
-# 개발용 서버 시작
-EXPOSE 3000
+# 실행 스크립트 설정
 CMD ["npm", "start"]
+
+# 노출 포트
+EXPOSE 3000

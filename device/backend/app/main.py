@@ -315,6 +315,15 @@ async def process_admin_message(message, websocket):
                 "type": "webex_connection_established",
                 "timestamp": datetime.now().isoformat(),
                 "device_info": DEVICE_INFO,
+                # Webex 연결에 필요한 추가 정보
+                "webex_info": {
+                    "sipUri": f"device-{DEVICE_INFO['id']}@example.webex.com",
+                    "deviceId": DEVICE_INFO["id"],
+                    "capabilities": {
+                        "audio": True,
+                        "video": True,
+                    }
+                }
             },
             websocket,
         )
@@ -325,7 +334,7 @@ async def process_admin_message(message, websocket):
         )
 
         logger.info("관리자와 Webex 연결이 설정되었습니다.")
-
+    
     elif msg_type == "webex_disconnect":
         # Webex 연결 종료
         manager.webex_active = False
