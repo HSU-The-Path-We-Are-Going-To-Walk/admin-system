@@ -66,7 +66,7 @@ function App() {
         const fetchBusStops = async () => {
             try {
                 console.log('버스 정류장 데이터 요청 시작');
-                const response = await axios.get('http://localhost:8000/api/bus-stops');
+                const response = await axios.get('http://localhost:8001/api/bus-stops');
                 console.log('버스 정류장 데이터 응답 수신:', response.data);
 
                 if (response.data && Array.isArray(response.data) && response.data.length > 0) {
@@ -94,7 +94,7 @@ function App() {
 
         const connectWebSocket = () => {
             try {
-                socket = new WebSocket('ws://localhost:8000/ws/emergency');
+                socket = new WebSocket('ws://localhost:8001/ws/emergency');
 
                 socket.onopen = () => {
                     console.log('웹소켓 연결 성공');

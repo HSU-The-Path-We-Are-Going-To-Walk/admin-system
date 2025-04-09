@@ -6,7 +6,7 @@ const API_CONFIG = {
     NOTICES_SYNC_URL: "https://5804-223-194-156-42.ngrok-free.app/notices/sync",
 
     // 기본 로컬 백엔드 API URL (기존 API 엔드포인트용)
-    LOCAL_API_URL: "http://localhost:8000"
+    LOCAL_API_URL: "http://localhost:8001"
 };
 
 export default API_CONFIG;

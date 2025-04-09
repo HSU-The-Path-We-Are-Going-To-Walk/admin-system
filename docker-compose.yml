@@ -10,16 +10,16 @@ services:
       - /app/app/__pycache__
       - /app/app/data/__pycache__
     ports:
-      - "8000:8000"
+      - "8001:8001"
     environment:
       - DATABASE_URL=sqlite:///./app.db
       - PYTHONUNBUFFERED=1
       - PYTHONDONTWRITEBYTECODE=1
     # 잘못된 옵션 제거하고 올바른 uvicorn 옵션만 사용
-    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --log-level warning
+    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload --log-level warning
     restart: on-failure
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8001/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -38,7 +38,7 @@ services:
       - ./frontend/.env:/app/.env:cached
       - /app/node_modules
     ports:
-      - "3000:3000"
+      - "3001:3001"
     environment:
       - GENERATE_SOURCEMAP=false
       - CHOKIDAR_USEPOLLING=true
@@ -46,6 +46,7 @@ services:
       - FAST_REFRESH=false
       - WATCHPACK_POLLING=true
       - NODE_ENV=development
+      - PORT=3001
       # 실제 유효한 토큰으로 변경하세요 (https://developer.webex.com/docs/getting-started에서 발급)
       - REACT_APP_WEBEX_ACCESS_TOKEN=MTVlYjFhNTAtMWViYy00MGQ3LWE3YTgtNzc4YjNjZWUwNzg2MjNhY2UxNDItMTQw_P0A1_4afba7eb-aa79-414b-83ef-005e438f3e44
     depends_on:
