@@ -383,6 +383,12 @@ const WebexDeviceConnect = ({ busStop, onClose }) => {
                                         src={streamUrl}
                                         alt={`${busStop.name} 정류장 실시간 화면`}
                                         className="device-video"
+                                        style={{
+                                            objectFit: 'contain',
+                                            width: '100%',
+                                            height: '100%',
+                                            backgroundColor: '#000'
+                                        }}
                                     />
                                 ) : (
                                     // Webex 비디오 스트림 사용
@@ -391,6 +397,12 @@ const WebexDeviceConnect = ({ busStop, onClose }) => {
                                         autoPlay
                                         playsInline
                                         className="device-video"
+                                        style={{
+                                            objectFit: 'contain',
+                                            width: '100%',
+                                            height: '100%',
+                                            backgroundColor: '#000'
+                                        }}
                                     />
                                 )}
                                 <div className="camera-overlay-text">
