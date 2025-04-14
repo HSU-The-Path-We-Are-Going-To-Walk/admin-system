@@ -24,7 +24,7 @@ const WebexDeviceConnect = ({ busStop, onClose }) => {
     const meetingRef = useRef(null);
 
     // 디바이스 백엔드 서버 URL 설정
-    const DEVICE_BACKEND_URL = 'http://localhost:8000'; // 실제 device-backend 서버 URL로 변경 필요
+    const DEVICE_BACKEND_URL = 'https://b0a9-58-230-197-51.ngrok-free.app'; // 실제 device-backend 서버 URL로 변경 필요
 
     // cleanupMeeting 함수를 useCallback으로 감싸서 의존성 문제 해결
     const cleanupMeeting = useCallback(() => {

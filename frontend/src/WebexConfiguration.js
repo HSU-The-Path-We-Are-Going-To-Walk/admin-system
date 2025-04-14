@@ -2,18 +2,16 @@
  * Webex SDK 설정 및 도우미 함수
  */
 
-// 명확히 토큰 설정
-const TOKEN = process.env.REACT_APP_WEBEX_ACCESS_TOKEN ||
-    'MTVlYjFhNTAtMWViYy00MGQ3LWE3YTgtNzc4YjNjZWUwNzg2MjNhY2UxNDItMTQw_P0A1_4afba7eb-aa79-414b-83ef-005e438f3e44';
+// Webex API 설정
+export const WEBEX_ACCESS_TOKEN = "Cc640913853e50260bde46808d70e771bdb05f6d0b2ec735875a6fd9a9d5273d5"; // 개인 액세스 토큰 입력
 
-// 토큰 유효성 체크 로깅
-console.log('Webex 토큰 설정 확인:', {
-    토큰길이: TOKEN.length,
-    토큰앞부분: TOKEN.substring(0, 10) + '...'
-});
-
-// 토큰 내보내기
-export const WEBEX_ACCESS_TOKEN = TOKEN;
+// 다른 Webex 관련 설정
+export const WEBEX_CONFIG = {
+    apiUrl: 'https://api.ciscospark.com/v1',
+    clientId: '',  // OAuth 클라이언트 ID (현재 사용되지 않음)
+    clientSecret: '', // OAuth 클라이언트 시크릿 (현재 사용되지 않음)
+    redirectUri: 'http://localhost:3000/callback'
+};
 
 // 몇 가지 상수 및 Webex SDK가 필요로 하는 전역 변수 설정
 global.Buffer = global.Buffer || require('buffer').Buffer;

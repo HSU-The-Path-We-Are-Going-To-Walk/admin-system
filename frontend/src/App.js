@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import NotificationStack from './components/NotificationStack';
 import SearchBar from './components/SearchBar';
 import WebexDeviceConnect from './components/WebexDeviceConnect';
+import WebexMeetingManager from './components/WebexMeetingManager'; // 웹엑스 미팅 관리 컴포넌트 추가
 import emergencySound from './components/EmergencySound';
 import API_CONFIG from './config'; // 설정 파일 추가
 import axios from 'axios';
@@ -360,6 +361,14 @@ function App() {
                                 <div className="empty-history-message">긴급 알림 내역이 없습니다.</div>
                             )}
                         </div>
+                    </div>
+                );
+
+            // 웹엑스 미팅 관리 컴포넌트 추가
+            case 'webex-meeting':
+                return (
+                    <div className="menu-component webex-meeting">
+                        <WebexMeetingManager />
                     </div>
                 );
 

@@ -19,6 +19,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 웹엑스 미팅 정보를 저장할 전역 변수
+webex_meeting_info = None
+
 
 # WebSocket 연결을 관리하기 위한 클래스
 class ConnectionManager:
@@ -133,3 +136,125 @@ async def update_notices(request_data: Dict[str, Any]):
         raise HTTPException(
             status_code=500, detail=f"게시판 업데이트에 실패했습니다: {str(e)}"
         )
+
+
+# 웹엑스 미팅 정보 저장 API (간소화 버전)
+@app.post("/api/webex-meeting")
+async def create_webex_meeting(meeting_info: Dict[str, Any]):
+    """
+    웹엑스 미팅 정보를 저장하는 API 엔드포인트
+    """
+    global webex_meeting_info
+    try:
+        # 요청 내용 로깅
+        print(f"웹엑스 미팅 정보 저장 요청: {meeting_info}")
+
+        # 미팅 URL 필수 확인
+        if "url" not in meeting_info or not meeting_info["url"]:
+            raise HTTPException(status_code=400, detail="웹엑스 미팅 URL이 필요합니다.")
+
+        # 생성 시간은 서버에서 생성
+        if "created" not in meeting_info:
+            meeting_info["created"] = datetime.now().isoformat()
+
+        # 활성화 여부가 없으면 기본값으로 True 설정
+        if "active" not in meeting_info:
+            meeting_info["active"] = True
+
+        # 미팅 정보 저장
+        webex_meeting_info = meeting_info
+
+        print(f"웹엑스 미팅 정보 저장 완료: {webex_meeting_info}")
+
+        return {
+            "status": "success",
+            "message": "웹엑스 미팅 정보가 성공적으로 저장되었습니다.",
+            "timestamp": datetime.now().isoformat(),
+            **webex_meeting_info,
+        }
+
+    except HTTPException as http_ex:
+        # 이미 HTTPException인 경우 그대로 전달
+        raise http_ex
+    except Exception as e:
+        # 에러 로깅
+        print(f"웹엑스 미팅 정보 저장 중 오류 발생: {str(e)}")
+        traceback.print_exc()
+
+        # 클라이언트에 에러 응답
+        raise HTTPException(
+            status_code=500, detail=f"웹엑스 미팅 정보 저장에 실패했습니다: {str(e)}"
+        )
+
+
+# 웹엑스 미팅 정보 조회 API
+@app.get("/api/webex-meeting")
+async def get_webex_meeting():
+    """
+    현재 활성화된 웹엑스 미팅 정보를 조회하는 API 엔드포인트
+    """
+    if webex_meeting_info and webex_meeting_info.get("active", False):
+        return webex_meeting_info
+    else:
+        return {"active": False, "message": "활성화된 미팅이 없습니다."}
+
+
+# 디바이스에서 사용할 웹엑스 미팅 정보 조회 API (간소화 버전)
+@app.get("/api/webex-meeting/{bus_stop_id}")
+async def get_webex_meeting_for_device(bus_stop_id: int):
+    """
+    특정 정류장에서 사용할 웹엑스 미팅 정보를 조회하는 API 엔드포인트
+    """
+    print(f"미팅 정보 요청: 정류장 ID {bus_stop_id}")
+
+    # 요청한 정류장이 존재하는지 확인
+    bus_stop = get_bus_stop_by_id(bus_stop_id)
+    if not bus_stop:
+        raise HTTPException(
+            status_code=404,
+            detail=f"ID가 {bus_stop_id}인 버스 정류장을 찾을 수 없습니다.",
+        )
+
+    # 활성화된 미팅이 있는지 확인
+    if not webex_meeting_info or not webex_meeting_info.get("active", False):
+        return {
+            "active": False,
+            "message": "활성화된 미팅이 없습니다.",
+            "busStopName": bus_stop["name"],
+        }
+
+    # 미팅 정보 반환 (URL만 반환)
+    return {
+        "active": True,
+        "url": webex_meeting_info.get("url", ""),
+        "busStopName": bus_stop["name"],
+        "busStopId": bus_stop_id,
+    }
+
+
+# 웹엑스 미팅 종료 API
+@app.delete("/api/webex-meeting")
+async def delete_webex_meeting():
+    """
+    웹엑스 미팅을 종료하는 API 엔드포인트
+    """
+    global webex_meeting_info
+
+    if webex_meeting_info:
+        # 비활성화 처리
+        webex_meeting_info["active"] = False
+        webex_meeting_info["ended"] = datetime.now().isoformat()
+
+        print(f"웹엑스 미팅 종료: {webex_meeting_info}")
+
+        return {
+            "status": "success",
+            "message": "웹엑스 미팅이 종료되었습니다.",
+            "timestamp": datetime.now().isoformat(),
+        }
+    else:
+        return {
+            "status": "warning",
+            "message": "종료할 미팅이 없습니다.",
+            "timestamp": datetime.now().isoformat(),
+        }

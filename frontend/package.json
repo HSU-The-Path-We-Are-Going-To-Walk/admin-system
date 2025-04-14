@@ -2,6 +2,7 @@
     "name": "emergency-button-frontend",
     "version": "0.1.0",
     "private": true,
+    "proxy": "http://backend:8001",
     "dependencies": {
         "@mui/icons-material": "^5.11.16",
         "@mui/material": "^5.13.0",

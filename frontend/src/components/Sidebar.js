@@ -24,6 +24,9 @@ const Sidebar = ({ isOpen, onClose, onMenuSelect }) => {
                 <div className="menu-item" onClick={() => handleMenuClick('emergency-history')}>
                     <span className="menu-icon">🚨</span>긴급 알림 내역
                 </div>
+                <div className="menu-item" onClick={() => handleMenuClick('webex-meeting')}>
+                    <span className="menu-icon">🎥</span>웹엑스 미팅 관리
+                </div>
                 <div className="menu-item" onClick={() => handleMenuClick('bulletin-board')}>
                     <span className="menu-icon">📋</span>게시판 업데이트
                 </div>
