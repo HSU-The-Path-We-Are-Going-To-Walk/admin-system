@@ -749,6 +749,8 @@ body, html {
 /* 성공 상태 스타일 */
 .bulletin-success {
   text-align: center;
+  width: 100%; /* 너비 확보 */
+  max-width: 600px; /* 최대 너비 설정 */
 }
 
 .success-icon {
@@ -768,6 +770,38 @@ body, html {
   color: #28a745;
   font-weight: bold;
   font-size: 18px;
+  margin-bottom: 20px; /* 제목 목록과의 간격 추가 */
+}
+
+/* 게시판 성공 상세 정보 스타일 */
+.bulletin-success-details {
+  margin-top: 20px;
+  text-align: left;
+  background-color: #e9f7ef; /* 연한 녹색 배경 */
+  border: 1px solid #a6d9b8; /* 연한 녹색 테두리 */
+  border-radius: 4px;
+  padding: 15px;
+  max-height: 300px; /* 목록 최대 높이 설정 */
+  overflow-y: auto; /* 내용 많으면 스크롤 */
+}
+
+.bulletin-success-details h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #155724; /* 진한 녹색 */
+  font-size: 16px;
+}
+
+.bulletin-success-list {
+  list-style: disc; /* 기본 목록 스타일 */
+  padding-left: 20px;
+  margin: 0;
+}
+
+.bulletin-success-item {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #333; /* 기본 텍스트 색상 */
 }
 
 /* 에러 상태 스타일 */

@@ -25,6 +25,8 @@ function App() {
     // 게시판 업데이트 상태 추가
     const [bulletinUpdateStatus, setBulletinUpdateStatus] = useState(null); // 'loading', 'success', 'error' 중 하나
     const [bulletinUpdateMessage, setBulletinUpdateMessage] = useState('');
+    const [updatedNotices, setUpdatedNotices] = useState([]);
+
     // 긴급 알림 활성화 상태 추가
     const [emergencyActive, setEmergencyActive] = useState(false);
     // 카메라 연결 상태 추가
@@ -269,10 +271,16 @@ function App() {
     const handleBulletinUpdate = async () => {
         setBulletinUpdateStatus('loading');
         setBulletinUpdateMessage('게시판 업데이트 중...');
+        setUpdatedNotices([]);
+
 
         try {
-            // 설정 파일에서 API URL 가져오기
-            const apiUrl = API_CONFIG.NOTICES_SYNC_URL;
+            // 설정 파일에서 기본 URL 가져오기
+            const baseUrl = API_CONFIG.NOTICES_SYNC_URL;
+            // 최종 API URL 구성 (기본 URL 끝에 슬래시가 있는지 확인하고 경로 추가)
+            const apiUrl = baseUrl.endsWith('/') ? `${baseUrl}notices/sync` : `${baseUrl}/notices/sync`;
+
+            console.log('게시판 업데이트 요청 URL:', apiUrl); // 요청 URL 확인용 로그 추가
 
             // API 호출
             const response = await axios.post(apiUrl, {
@@ -280,22 +288,42 @@ function App() {
             });
 
             console.log('게시판 업데이트 응답:', response.data);
+            // 응답 구조 자세히 확인
+            console.log('응답 데이터 타입:', typeof response.data);
+            console.log('응답 데이터 키목록:', Object.keys(response.data));
 
             // 업데이트 성공
             setBulletinUpdateStatus('success');
-            setBulletinUpdateMessage('게시판 데이터가 성공적으로 업데이트되었습니다.');
 
-            // 5초 후 상태 초기화
-            setTimeout(() => {
-                if (bulletinUpdateStatus === 'success') {
-                    setBulletinUpdateStatus(null);
-                }
-            }, 5000);
+            // 응답 데이터에서 제목 목록 추출
+            // 서버 응답 구조에 따라 적절한 필드 사용
+            let noticeTitles = [];
+
+            // data 필드 확인 (일반적인 응답 구조)
+            if (response.data.data && Array.isArray(response.data.data)) {
+                noticeTitles = response.data.data;
+            }
+            // titles 필드 확인 (기존 가정했던 구조)
+            else if (response.data.titles && Array.isArray(response.data.titles)) {
+                noticeTitles = response.data.titles;
+            }
+            // 응답이 직접 배열인 경우
+            else if (Array.isArray(response.data)) {
+                noticeTitles = response.data;
+            }
+
+            console.log('추출된 게시판 제목 목록:', noticeTitles);
+
+            setUpdatedNotices(noticeTitles);
+            setBulletinUpdateMessage(`게시판 데이터가 성공적으로 업데이트되었습니다. (${noticeTitles.length}개)`);
+
+            // 자동 초기화 타임아웃 제거 (결과가 사라지지 않도록)
 
         } catch (error) {
             console.error('게시판 업데이트 실패:', error);
             setBulletinUpdateStatus('error');
-            setBulletinUpdateMessage(`게시판 업데이트에 실패했습니다: ${error.message || '연결 오류'}`);
+            setBulletinUpdateMessage(`게시판 업데이트에 실패했습니다: ${error.response?.data?.detail || error.message || '연결 오류'}`);
+            setUpdatedNotices([]); // 에러 시 목록 초기화
         }
     };
 
@@ -388,6 +416,17 @@ function App() {
                                 <div className="bulletin-success">
                                     <div className="success-icon">✓</div>
                                     <p>{bulletinUpdateMessage}</p>
+                                    {/* 수집된 게시판 제목 목록 표시 */}
+                                    {updatedNotices.length > 0 && (
+                                        <div className="bulletin-success-details">
+                                            <h4>수집된 게시물 제목:</h4>
+                                            <ul className="bulletin-success-list">
+                                                {updatedNotices.map((title, index) => (
+                                                    <li key={index} className="bulletin-success-item">{title}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -491,7 +530,7 @@ function App() {
                                 <strong>이메일:</strong> transport@goheung.go.kr
                             </div>
                             <div className="admin-info-item">
-                                <strong>개발:</strong> HSU-The-Path-We-Are-Going-To-Walk
+                                <strong>개발:</strong> HSU-ThePathWeAreGoingToWalk-박한빈
                             </div>
                         </div>
                     </div>
