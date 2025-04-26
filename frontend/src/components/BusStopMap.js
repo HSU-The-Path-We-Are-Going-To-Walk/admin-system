@@ -142,9 +142,6 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies, isSidebarOpen }
                         <img src="/camera-icon.png" alt="Camera" onerror="this.style.display='none'; this.nextElementSibling.style.margin='0'" style="width:16px; height:16px; margin-right:4px; vertical-align:middle;">
                         <span>카메라 연결</span>
                     </button>
-                    <button class="emergency-btn" onclick="window.simulateEmergency(${stop.id})">
-                        긴급 버튼 테스트
-                    </button>
                 </div>
             </div>
         </div>`;

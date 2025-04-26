@@ -1,28 +1,39 @@
 import React, { useEffect } from 'react';
 
 const NotificationStack = ({ notifications, onClose, onAddDebug, onNotificationClick }) => {
-    // F2 키 이벤트 리스너 - 디버그 알림만 추가
+    // F2 키 이벤트 리스너 - 긴급 테스트 실행
     useEffect(() => {
-        console.log("NotificationStack 컴포넌트가 마운트되었습니다.");
-
-        // 디버그 알림 추가를 위한 키보드 이벤트 리스너
+        // F2 키를 누르면 정류장 이름 또는 번호를 입력받아 긴급 테스트 실행
         const handleKeyDown = (event) => {
             if (event.key === 'F2') {
-                if (onAddDebug) {
-                    console.log("디버그 알림 추가");
-                    onAddDebug();
+                const input = window.prompt('긴급 테스트를 실행할 정류장 이름 또는 번호를 입력하세요.');
+                if (!input) return;
+                // 숫자면 번호, 아니면 이름으로 찾기
+                let stopId = null;
+                if (/^\d+$/.test(input.trim())) {
+                    stopId = parseInt(input.trim(), 10);
                 } else {
-                    console.error("디버그 알림 추가 함수가 전달되지 않았습니다");
+                    // 이름으로 찾기 (대소문자 무시)
+                    const allStops = window.busStopsForEmergency || [];
+                    const found = allStops.find(s => s.name.replace(/\s/g, '') === input.replace(/\s/g, ''));
+                    if (found) stopId = found.id;
+                }
+                if (stopId) {
+                    if (window.simulateEmergency) {
+                        window.simulateEmergency(stopId);
+                    } else {
+                        alert('긴급 테스트 함수를 찾을 수 없습니다.');
+                    }
+                } else {
+                    alert('해당 정류장을 찾을 수 없습니다.');
                 }
             }
         };
-
         window.addEventListener('keydown', handleKeyDown);
-
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [onAddDebug]);
+    }, []);
 
     // 알림 클릭 핸들러
     const handleNotificationClick = (notification, e) => {

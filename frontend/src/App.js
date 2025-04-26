@@ -142,6 +142,14 @@ function App() {
         };
     }, []);
 
+    // 버스 정류장 데이터가 로드되면 window.busStopsForEmergency에 저장 (F2 긴급 테스트용)
+    useEffect(() => {
+        window.busStopsForEmergency = busStops;
+        return () => {
+            delete window.busStopsForEmergency;
+        };
+    }, [busStops]);
+
     // 화면 깜빡임 효과 활성화 함수
     const activateEmergencyEffect = () => {
         setEmergencyActive(true);
