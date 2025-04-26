@@ -299,12 +299,9 @@ function App() {
         setBulletinUpdateMessage('게시판 업데이트 중...');
         setUpdatedNotices([]);
 
-
         try {
-            // 설정 파일에서 기본 URL 가져오기
-            const baseUrl = API_CONFIG.NOTICES_SYNC_URL;
-            // 최종 API URL 구성 (기본 URL 끝에 슬래시가 있는지 확인하고 경로 추가)
-            const apiUrl = baseUrl.endsWith('/') ? `${baseUrl}notices/sync` : `${baseUrl}/notices/sync`;
+            // config.js에서 주소와 엔드포인트를 분리해서 가져옴
+            const apiUrl = `${API_CONFIG.NOTICES_BASE_URL}${API_CONFIG.NOTICES_SYNC_ENDPOINT}`;
 
             console.log('게시판 업데이트 요청 URL:', apiUrl); // 요청 URL 확인용 로그 추가
 

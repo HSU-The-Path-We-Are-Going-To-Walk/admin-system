@@ -606,7 +606,7 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies, isSidebarOpen }
                     <div style={{ marginBottom: 12 }}>
                         <strong>받는 사람:</strong><br />
                         <label style={{ marginRight: 12 }}>
-                            <input type="radio" name="recipient" value="admin" checked={emergencyRecipient === 'admin'} onChange={() => setEmergencyRecipient('admin')} /> 관리자
+                            <input type="radio" name="recipient" value="admin" checked={emergencyRecipient === 'admin'} onChange={() => setEmergencyRecipient('admin')} /> 인근 직원
                         </label>
                         <label style={{ marginRight: 12 }}>
                             <input type="radio" name="recipient" value="119" checked={emergencyRecipient === '119'} onChange={() => setEmergencyRecipient('119')} /> 119

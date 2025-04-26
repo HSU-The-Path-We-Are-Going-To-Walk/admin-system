@@ -4,7 +4,7 @@ class EmergencySound {
         this.audioContext = null;
         this.soundBuffer = null;
         this.isInitialized = false;
-        this.volume = 0.4; // 기본 볼륨(0-1)
+        this.volume = 0.7; // 기본 볼륨(0-1)
         this.isEnabled = true; // 소리 활성화 여부
     }
 
