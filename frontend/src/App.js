@@ -185,6 +185,15 @@ function App() {
 
             // 긴급 알림 활성화 (화면 깜빡임 효과 시작)
             activateEmergencyEffect();
+
+            // 정류장으로 자동 이동
+            setSearchedStop({
+                id: busStop.id,
+                name: busStop.name,
+                lat: busStop.lat,
+                lng: busStop.lng,
+                timestamp: Date.now()
+            });
         } else {
             console.error(`ID가 ${busStopId}인 버스 정류장을 찾을 수 없습니다.`);
         }
@@ -241,6 +250,15 @@ function App() {
 
             // 긴급 알림 활성화
             activateEmergencyEffect();
+
+            // 정류장으로 자동 이동
+            setSearchedStop({
+                id: data.busStopId,
+                name: data.busStopName,
+                lat: data.lat,
+                lng: data.lng,
+                timestamp: Date.now()
+            });
 
             // 설정된 알림 유지시간에 따라 자동 제거 (0이면 수동으로만 제거)
             if (settings.notificationDuration > 0) {
