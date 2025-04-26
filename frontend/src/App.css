@@ -253,17 +253,23 @@ body, html {
 }
 
 .emergency-btn {
-  background-color: #dc3545;
+  background-color: #f44336;
   color: white;
   border: none;
   border-radius: 4px;
-  padding: 8px 12px;
+  padding: 8px 16px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 500;
+  width: 100%;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .emergency-btn:hover {
-  background-color: #c82333;
+  background-color: #d32f2f;
 }
 
 /* Sidebar 스타일 */
@@ -1137,6 +1143,7 @@ body, html {
 .roombar-btn {
   background-color: #005073; 
   color: white;
+
 }
 
 .roombar-btn:hover {
@@ -1144,15 +1151,19 @@ body, html {
 }
 
 .emergency-btn {
-  cursor: pointer;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
   background-color: #f44336;
   color: white;
-  font-size: 13px;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
   font-weight: 500;
-  margin-top: 5px;
+  width: 100%;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .emergency-btn:hover {

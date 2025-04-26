@@ -12,6 +12,22 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies, isSidebarOpen }
     const animationInProgressRef = useRef(false); // 애니메이션 진행 여부 추적
     const mapInitializedRef = useRef(false); // 지도 초기화 여부 추적
     const initialLoadComplete = useRef(false); // 초기 로딩 완료 여부
+    const [emergencyPopup, setEmergencyPopup] = useState(null); // { stop } 형태
+    const [emergencyRecipient, setEmergencyRecipient] = useState('admin');
+    const [emergencyMessage, setEmergencyMessage] = useState('');
+
+    // 팝업 열기 함수 (window에서 호출)
+    useEffect(() => {
+        window.openEmergencyPopup = (stopId) => {
+            const stop = busStops.find(s => s.id === stopId);
+            if (stop) {
+                setEmergencyRecipient('admin');
+                setEmergencyMessage(`${stop.name} 정류장에서 발생한 비상상황입니다.`);
+                setEmergencyPopup({ stop });
+            }
+        };
+        return () => { delete window.openEmergencyPopup; };
+    }, [busStops]);
 
     // 카카오맵 초기화 - index.html에 이미 로드된 API 사용
     useEffect(() => {
@@ -141,6 +157,9 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies, isSidebarOpen }
                     <button class="camera-connect-btn" onclick="window.connectToCamera(${stop.id})">
                         <img src="/camera-icon.png" alt="Camera" onerror="this.style.display='none'; this.nextElementSibling.style.margin='0'" style="width:16px; height:16px; margin-right:4px; vertical-align:middle;">
                         <span>카메라 연결</span>
+                    </button>
+                    <button class="emergency-btn" onclick="window.openEmergencyPopup(${stop.id})">
+                        긴급 메시지 전송
                     </button>
                 </div>
             </div>
@@ -576,6 +595,42 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies, isSidebarOpen }
         };
     }, []);
 
+    // 긴급 메시지 팝업 렌더링
+    const renderEmergencyPopup = () => {
+        if (!emergencyPopup) return null;
+        const { stop } = emergencyPopup;
+        return (
+            <div className="emergency-message-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2000, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="emergency-message-modal" style={{ background: '#fff', borderRadius: 8, padding: 24, minWidth: 320, boxShadow: '0 2px 16px rgba(0,0,0,0.2)' }}>
+                    <h2 style={{ marginBottom: 16 }}>{stop.name} - 긴급 메시지 전송</h2>
+                    <div style={{ marginBottom: 12 }}>
+                        <strong>받는 사람:</strong><br />
+                        <label style={{ marginRight: 12 }}>
+                            <input type="radio" name="recipient" value="admin" checked={emergencyRecipient === 'admin'} onChange={() => setEmergencyRecipient('admin')} /> 관리자
+                        </label>
+                        <label style={{ marginRight: 12 }}>
+                            <input type="radio" name="recipient" value="119" checked={emergencyRecipient === '119'} onChange={() => setEmergencyRecipient('119')} /> 119
+                        </label>
+                        <label>
+                            <input type="radio" name="recipient" value="112" checked={emergencyRecipient === '112'} onChange={() => setEmergencyRecipient('112')} /> 112
+                        </label>
+                    </div>
+                    <div style={{ marginBottom: 12 }}>
+                        <strong>내용:</strong><br />
+                        <textarea style={{ width: '100%', minHeight: 60 }} value={emergencyMessage} onChange={e => setEmergencyMessage(e.target.value)} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                        <button onClick={() => setEmergencyPopup(null)} style={{ padding: '6px 16px' }}>닫기</button>
+                        <button onClick={() => {
+                            alert(`메시지가 전송되었습니다.\n받는 사람: ${emergencyRecipient}\n내용: ${emergencyMessage}`);
+                            setEmergencyPopup(null);
+                        }} style={{ background: '#e53935', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px' }}>전송</button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <>
             {mapError && (
@@ -585,6 +640,7 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies, isSidebarOpen }
                 </div>
             )}
             <div id="map" className="map-container"></div>
+            {renderEmergencyPopup()}
         </>
     );
 };
