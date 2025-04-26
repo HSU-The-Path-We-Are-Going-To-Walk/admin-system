@@ -425,6 +425,13 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
                 console.error("기본 이동도 실패:", fallbackError);
             }
         }
+
+        // 이동 후 펄스 오버레이 제거
+        const markerInfo = markersRef.current[searchedStop.id];
+        if (markerInfo && markerInfo.pulseOverlay) {
+            markerInfo.pulseOverlay.setMap(null);
+            markerInfo.pulseOverlay = null;
+        }
     }, [map, searchedStop]);
 
     // 긴급 알림이 발생한 정류장 마커 스타일 변경
