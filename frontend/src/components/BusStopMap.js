@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 
-const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
+const BusStopMap = ({ busStops, searchedStop, activeEmergencies, isSidebarOpen }) => {
     const mapRef = useRef(null);
     const [map, setMap] = useState(null);
     const markersRef = useRef({});
@@ -113,12 +113,21 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
             // 일단 bounds로 중심점 이동
             map.setBounds(bounds);
 
+            // 사이드바가 열려 있으면 중심을 왼쪽(서쪽)으로 보정
+            if (isSidebarOpen) {
+                const center = map.getCenter();
+                // 경도(lng)를 약간 서쪽으로 이동 (0.01~0.03 정도, 지역에 따라 조정)
+                const offset = 0.025; // 고흥군 기준 약 2~3km
+                const newCenter = new window.kakao.maps.LatLng(center.getLat(), center.getLng() - offset);
+                map.setCenter(newCenter);
+            }
+
             // 그 후 줌 레벨은 원래 설정값으로 복구
             map.setLevel(currentLevel);
 
             initialLoadComplete.current = true;
         }
-    }, [map, busStops]);
+    }, [map, busStops, isSidebarOpen]);
 
     // 마커 클릭 이벤트 콘텐츠 템플릿
     const getInfoWindowContent = (stop) => `
@@ -359,7 +368,7 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
                 const φ1 = lat1 * Math.PI / 180;
                 const φ2 = lat2 * Math.PI / 180;
                 const Δφ = (lat2 - lat1) * Math.PI / 180;
-                const Δλ = (lon1 - lon2) * Math.PI / 180;
+                const Δλ = (lon2 - lon1) * Math.PI / 180;
 
                 const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
                     Math.cos(φ1) * Math.cos(φ2) *
@@ -424,13 +433,6 @@ const BusStopMap = ({ busStops, searchedStop, activeEmergencies }) => {
             } catch (fallbackError) {
                 console.error("기본 이동도 실패:", fallbackError);
             }
-        }
-
-        // 이동 후 펄스 오버레이 제거
-        const markerInfo = markersRef.current[searchedStop.id];
-        if (markerInfo && markerInfo.pulseOverlay) {
-            markerInfo.pulseOverlay.setMap(null);
-            markerInfo.pulseOverlay = null;
         }
     }, [map, searchedStop]);
 

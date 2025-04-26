@@ -14,7 +14,7 @@ function App() {
     // 상태 관리
     const [busStops, setBusStops] = useState([]);
     const [notifications, setNotifications] = useState([]);
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState(null);
     const [searchedStop, setSearchedStop] = useState(null);
@@ -704,6 +704,7 @@ function App() {
                     busStops={busStops}
                     searchedStop={searchedStop}
                     activeEmergencies={notifications}
+                    isSidebarOpen={sidebarOpen}
                 />
             )}
 
