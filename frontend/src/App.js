@@ -444,8 +444,26 @@ function App() {
                                         <div className="bulletin-success-details">
                                             <h4>수집된 게시물 제목:</h4>
                                             <ul className="bulletin-success-list">
-                                                {updatedNotices.map((title, index) => (
-                                                    <li key={index} className="bulletin-success-item">{title}</li>
+                                                {updatedNotices.map((notice, index) => (
+                                                    <li key={index} className="bulletin-success-item">
+                                                        {notice && typeof notice === 'object' && notice.title && notice.url ? (
+                                                            <a
+                                                                href={notice.url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                onClick={e => {
+                                                                    e.preventDefault();
+                                                                    window.open(notice.url, '_blank', 'width=1000,height=800,noopener=yes');
+                                                                }}
+                                                                style={{ color: '#007bff', textDecoration: 'underline', cursor: 'pointer' }}
+                                                            >
+                                                                {notice.title}
+                                                            </a>
+                                                        ) : (
+                                                            // fallback: 기존 문자열만 있을 때
+                                                            String(notice)
+                                                        )}
+                                                    </li>
                                                 ))}
                                             </ul>
                                         </div>

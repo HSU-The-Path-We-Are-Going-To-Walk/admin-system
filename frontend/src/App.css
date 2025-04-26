@@ -1007,6 +1007,69 @@ body, html {
   }
 }
 
+/* 긴급 메시지 전송 모달 스타일 */
+.emergency-message-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 2000;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emergency-message-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px 32px 24px 32px;
+  min-width: 380px;
+  min-height: 320px;
+  box-shadow: 0 2px 24px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.emergency-message-modal h2 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+
+.emergency-message-modal label,
+.emergency-message-modal strong {
+  font-size: 1.1rem;
+}
+
+.emergency-message-modal textarea {
+  width: 100%;
+  min-height: 100px;
+  font-size: 1.1rem;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  resize: vertical;
+  margin-top: 6px;
+}
+
+.emergency-message-modal button {
+  font-size: 1.1rem;
+  padding: 8px 22px;
+  border-radius: 6px;
+}
+
+@media (max-width: 600px) {
+  .emergency-message-modal {
+    min-width: 90vw;
+    padding: 18px 6vw;
+  }
+  .emergency-message-modal h2 {
+    font-size: 1.1rem;
+  }
+  .emergency-message-modal textarea {
+    font-size: 1rem;
+  }
+}
+
 /* 반응형 스타일 */
 @media screen and (max-width: 768px) {
   .search-bar-wrapper {
